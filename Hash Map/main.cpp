@@ -113,53 +113,25 @@ Node* HashMap::retrieve(const E& e) {
 
 
 int main() {
-	HashMap hm;
+	HashMap* hm = new HashMap();
 
-	hm.insert(5);
-	hm.insert(22);
-	hm.insert(35);
-	hm.insert(42);
-	hm.insert(55);
-	hm.insert(65);
+	hm->insert(13);
+	hm->insert(25);
+	hm->insert(17);
+	hm->insert(3);
+	hm->insert(90);
+	hm->insert(39);
+	hm->insert(12);
+	hm->insert(5);
+	printf("%d ", hm->retrieve(3)->val);
+	printf("%d ", hm->retrieve(5)->val);
+	printf("%d ", hm->retrieve(13)->val);
+	printf("%d ", hm->retrieve(12)->val);
+	printf("%d ", hm->retrieve(17)->val);
+	printf("%d ", hm->retrieve(25)->val);
+	printf("%d ", hm->retrieve(39)->val);
+	printf("%d ", hm->retrieve(90)->val);
 
-	Node* node;
-	node = hm.retrieve(5);
-	printf("%d\n", node->val);
-	node = hm.retrieve(65);
-	printf("%d\n", node->val);
-	node = hm.retrieve(55);
-	printf("%d\n", node->val);
-	node = hm.retrieve(35);
-	printf("%d\n", node->val);
-	node = hm.retrieve(22);
-	printf("%d\n", node->val);
-	node = hm.retrieve(42);
-	printf("%d\n", node->val);
-	printf("\n");
-
-	node = hm.retrieve(68411);
-	if (!node) printf("None\n");
-	printf("\n");
-
-	hm.remove(5);
-	node = hm.retrieve(5);
-	printf("%d\n", node->val);
-	hm.remove(65);
-	node = hm.retrieve(65);
-	printf("%d\n", node->val);
-	hm.remove(42);
-	node = hm.retrieve(42);
-	printf("%d\n", node->val);
-
-	hm.remove(22);
-	node = hm.retrieve(22);
-	if (!node) printf("None\n");
-
-	hm.remove(35);
-	node = hm.retrieve(35);
-	printf("%d\n", node->val);
-	node = hm.retrieve(55);
-	printf("%d\n", node->val);
 
 	return 0;
 }
