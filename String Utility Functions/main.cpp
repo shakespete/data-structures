@@ -2,12 +2,9 @@
 #include <stdio.h>
 
 
-char* str_copy(char* destination, char* src) {
-	if (destination == NULL) return NULL;
-	char* ptr = destination;
-	while (*src != '\0') *destination++ = *src++;
-	*destination = '\0';
-	return ptr;
+void str_copy(char* des, const char* src) {
+	while (*src != '\0') *des++ = *src++;
+	*des = '\0';
 }
 
 int str_len(char* str) {
@@ -25,7 +22,17 @@ bool str_equal(char* a, char* b) {
 	return false;
 }
 
-int main() {
+void some_fn(const char* src) {
+	char* destination = new char[11];
+	str_copy(destination, src);
 
+	printf("%s ", destination);
+}
+
+int main() {
+	some_fn("Well");
+	some_fn("hello");
+	some_fn("there");
+	printf("\n");
 	return 0;
 }
