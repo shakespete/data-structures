@@ -1,11 +1,17 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-typedef int E;
+bool is_equal(const char* a, const char* b) {
+	while (*a == *b) {
+		if (*a == '\0') return true;
+		++a;
+		++b;
+	}
+	return false;
+}
 
-class Node {
-public:
-	E val;
+struct Node {
+	const char* val;
 	Node* prev;
 	Node* next;
 };
@@ -17,9 +23,9 @@ public:
 	bool empty() const;
 	Node* front() const;
 	Node* back() const;
-	void add(Node* v, const E& e);
-	void addFront(const E& e);
-	void addBack(const E& e);
+	void add(Node* v, const char* e);
+	void addFront(const char* e);
+	void addBack(const char* e);
 	void remove(Node* v);
 	void removeFront();
 	void removeBack();
@@ -40,16 +46,16 @@ DLL::~DLL() { while (!empty()) removeFront(); }
 bool DLL::empty() const { return head->next == tail; }
 Node* DLL::front() const { return empty() ? NULL : head->next; }
 Node* DLL::back() const { return empty() ? NULL : tail->prev; }
-void DLL::add(Node* v, const E& e) {
+void DLL::add(Node* v, const char* e) {
 	Node* u = new Node;
 	u->val = e;
-	u->prev = v->prev;
 	u->next = v;
+	u->prev = v->prev;
 	v->prev->next = u;
 	v->prev = u;
 }
-void DLL::addFront(const E& e) { add(head->next, e); }
-void DLL::addBack(const E& e) { add(tail, e); }
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
 void DLL::remove(Node* v) {
 	if (!empty()) {
 		Node* u = v->prev;
@@ -66,32 +72,35 @@ class HashMap {
 	enum { DEF_CAP = 1000 };
 public:
 	HashMap(int cap = DEF_CAP);
-	int hash(const E& e);
-	void insert(const E& e);
-	void remove(const E& e);
-	Node* retrieve(const E& e);
+	int hash(const char* e) const;
+	void insert(const char* e);
+	void remove(const char* e);
+	Node* retrieve(const char* e) const;
 private:
 	DLL* HM;
 	int capacity;
 };
 
 HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(const E& e) {
-	int hash = (e * 31) % capacity;
-	if (hash < 0) hash += capacity;
-	return hash;
+int HashMap::hash(const char* e) const {
+	int hash = 31;
+	int c;
+	while (c = *e++) {
+		hash = (((hash << 5) + hash) + c) % capacity;
+	}
+	return hash % capacity;
 }
-void HashMap::insert(const E& e) {
+void HashMap::insert(const char* e) {
 	int hashVal = hash(e);
 	HM[hashVal].addBack(e);
 }
-void HashMap::remove(const E& e) {
+void HashMap::remove(const char* e) {
 	int hashVal = hash(e);
 	if (HM[hashVal].empty()) return;
 
 	Node* node = HM[hashVal].front();
-	while (node->val) {
-		if (node->val == e) {
+	while (node->val != NULL) {
+		if (is_equal(node->val, e)) {
 			HM[hashVal].remove(node);
 			break;
 		}
@@ -99,40 +108,36 @@ void HashMap::remove(const E& e) {
 	}
 	return;
 }
-Node* HashMap::retrieve(const E& e) {
+Node* HashMap::retrieve(const char* e) const {
 	int hashVal = hash(e);
 	if (HM[hashVal].empty()) return NULL;
-
 	Node* node = HM[hashVal].front();
-	while (node->val) {
-		if (node->val == e) return node;
+	while (node->val != NULL) {
+		if (is_equal(node->val, e)) return node;
 		node = node->next;
 	}
 	return NULL;
 }
 
-
 int main() {
 	HashMap* hm = new HashMap();
+	hm->insert("is");
+	hm->insert("misfortune");
+	hm->insert("school");
+	hm->insert("The");
+	hm->insert("good");
+	hm->insert("of");
+	hm->insert("school");
+	hm->insert("a");
 
-	hm->insert(13);
-	hm->insert(25);
-	hm->insert(17);
-	hm->insert(3);
-	hm->insert(90);
-	hm->insert(39);
-	hm->insert(12);
-	hm->insert(5);
-	printf("%d ", hm->retrieve(3)->val);
-	printf("%d ", hm->retrieve(5)->val);
-	printf("%d ", hm->retrieve(12)->val);
-	printf("%d ", hm->retrieve(13)->val);
-	printf("%d ", hm->retrieve(17)->val);
-	printf("%d ", hm->retrieve(25)->val);
-	printf("%d ", hm->retrieve(39)->val);
-	printf("%d ", hm->retrieve(90)->val);
-	printf("%d ", hm->retrieve(3)->val);
-
-
+	printf("%s ", hm->retrieve("The")->val);
+	printf("%s ", hm->retrieve("school")->val);
+	printf("%s ", hm->retrieve("of")->val);
+	printf("%s ", hm->retrieve("misfortune")->val);
+	printf("%s ", hm->retrieve("is")->val);
+	printf("%s ", hm->retrieve("a")->val);
+	printf("%s ", hm->retrieve("good")->val);
+	printf("%s ", hm->retrieve("school")->val);
+	printf("\nFIN\n");
 	return 0;
 }
