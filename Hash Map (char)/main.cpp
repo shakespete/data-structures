@@ -98,14 +98,8 @@ void HashMap::remove(const char* e) {
 	int hashVal = hash(e);
 	if (HM[hashVal].empty()) return;
 
-	Node* node = HM[hashVal].front();
-	while (node->val != NULL) {
-		if (is_equal(node->val, e)) {
-			HM[hashVal].remove(node);
-			break;
-		}
-		node = node->next;
-	}
+	Node* node = this->retrieve(e);
+	if (node != NULL) HM[hashVal].remove(node);
 	return;
 }
 Node* HashMap::retrieve(const char* e) const {

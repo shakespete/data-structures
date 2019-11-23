@@ -89,14 +89,8 @@ void HashMap::remove(const E& e) {
 	int hashVal = hash(e);
 	if (HM[hashVal].empty()) return;
 
-	Node* node = HM[hashVal].front();
-	while (node->val) {
-		if (node->val == e) {
-			HM[hashVal].remove(node);
-			break;
-		}
-		node = node->next;
-	}
+	Node* node = this->retrieve(e);
+	if (node != NULL) HM[hashVal].remove(node);
 	return;
 }
 Node* HashMap::retrieve(const E& e) {
@@ -133,6 +127,11 @@ int main() {
 	printf("%d ", hm->retrieve(90)->val);
 	printf("%d ", hm->retrieve(3)->val);
 
+	hm->remove(12);
+	hm->remove(3);
+	hm->remove(100);
+
+	printf("\nFIN\n");
 
 	return 0;
 }
