@@ -22,17 +22,37 @@ bool str_equal(char* a, char* b) {
 	return false;
 }
 
-void some_fn(const char* src) {
-	char* destination = new char[11];
-	str_copy(destination, src);
-
-	printf("%s ", destination);
+int str_compare(const char* a, const char* b) {
+	while (*a != '\0' || *b != '\0') {
+		if (*a < *b) return 0;
+		else if (*a > * b) return 1;
+		else {
+			++a;
+			++b;
+		}
+	}
+	return 0;
 }
 
 int main() {
-	some_fn("Well");
-	some_fn("hello");
-	some_fn("there");
+	char source[] = "insurmountable";
+	printf("%d: %s\n", source, source);
+
+	char* destination = new char[21];
+	str_copy(destination, source);
+	printf("%d -> %d: %s\n", &destination, destination, destination);
+
+	delete destination;
+
+	destination = new char[21];
+	str_copy(destination, source);
+	printf("%d -> %d: %s\n", &destination, destination, destination);
+
 	printf("\n");
+
+	printf("%d\n", str_compare("to be", "or not to be"));
+	printf("%d\n", str_compare("whether", "whether"));
+	printf("%d\n", str_compare("tis nobler in", "tis nobler"));
+	printf("%d\n", str_compare("the mind ", "the mind"));
 	return 0;
 }

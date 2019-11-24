@@ -1,2 +1,7 @@
 ﻿  main.cpp
+C:\Users\Peter\Developer\algorithms\data-structures\String Utility Functions\main.cpp(39): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'char *'
+C:\Users\Peter\Developer\algorithms\data-structures\String Utility Functions\main.cpp(43): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'char **'
+C:\Users\Peter\Developer\algorithms\data-structures\String Utility Functions\main.cpp(43): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type 'char *'
+C:\Users\Peter\Developer\algorithms\data-structures\String Utility Functions\main.cpp(49): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'char **'
+C:\Users\Peter\Developer\algorithms\data-structures\String Utility Functions\main.cpp(49): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 2 has type 'char *'
   String Utility Functions.vcxproj -> C:\Users\Peter\Developer\algorithms\data-structures\String Utility Functions\Debug\String Utility Functions.exe
