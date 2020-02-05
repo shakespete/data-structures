@@ -1,0 +1,3 @@
+﻿  main.cpp
+C:\Users\Peter\Developer\algorithms\data-structures\Binary Search Tree\main.cpp(84): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'Node *'
+  Binary Search Tree.vcxproj -> C:\Users\Peter\Developer\algorithms\data-structures\Binary Search Tree\Debug\Binary Search Tree.exe
