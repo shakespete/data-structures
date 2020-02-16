@@ -6,6 +6,7 @@ void str_copy(char* des, char* src) {
 	*des = '\0';
 }
 
+// Trie Node
 class TrieNode {
 public:
 	TrieNode();
@@ -32,6 +33,7 @@ TrieNode::~TrieNode() {
 	delete[] children;
 }
 
+// Trie
 class Trie {
 public:
 	Trie();

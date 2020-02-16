@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{C3D7BD41-CBE2-4ED5-9743-2144833296AB}</ProjectGuid>
-    <RootNamespace>Trie</RootNamespace>
+    <ProjectGuid>{17348114-4E85-470E-8370-35E9317DA3F5}</ProjectGuid>
+    <RootNamespace>TrieLexographicalTraversal</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
