@@ -1,93 +1,77 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-typedef int E;
-
 struct Node {
-	E val;
+	const char* val;
+	Node* prev;
+	Node* next;
 };
-
-class Heap {
-	enum { DEF_CAP = 117 };
+class DLL {
 public:
-	Heap(int cap = DEF_CAP);
-	~Heap();
-	int size() const;
+	DLL();
+	~DLL();
 	bool empty() const;
-	Node* root() const;
-	void push(const E& e);
-	void pop();
+	Node* front() const;
+	Node* back() const;
+	void add(Node* v, const char* e);
+	void addFront(const char* e);
+	void addBack(const char* e);
+	void remove(Node* v);
+	void removeFront();
+	void removeBack();
 private:
-	Node** H;
-	int n;
-	int capacity;
+	Node* head;
+	Node* tail;
 };
-Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
-Heap::~Heap() { while (!empty()) pop(); }
-int Heap::size() const { return n; }
-bool Heap::empty() const { return n == 0; }
-Node* Heap::root() const { return empty() ? NULL : H[1]; }
-void Heap::push(const E& e) {
-	if (size() != capacity) {
-		Node* v = new Node;
-		v->val = e;
-		++n;
-		H[n] = v;
-
-		int current = n;
-		while (current > 1 && H[current]->val < H[current / 2]->val) {
-			int parent = current / 2;
-			Node* temp = H[parent];
-			H[parent] = H[current];
-			H[current] = temp;
-			current = parent;
-		}
-	}
+DLL::DLL() {
+	head = new Node;
+	tail = new Node;
+	head->next = tail;
+	tail->prev = head;
+	head->val = NULL;
+	tail->val = NULL;
 }
-void Heap::pop() {
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+	Node* u = new Node;
+	u->val = e;
+
+	u->next = v;
+	u->prev = v->prev;
+	v->prev->next = u;
+	v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
 	if (!empty()) {
-		delete H[1];
-		H[1] = H[n];
-		--n;
-
-		int current = 1;
-		while (current * 2 <= n) {
-			int child;
-			int left = current * 2;
-			int right = current * 2 + 1;
-
-			if (left == n) child = left;
-			else child = H[left]->val < H[right]->val ? left : right;
-
-			if (H[current]->val < H[child]->val) break;
-
-			Node* temp = H[child];
-			H[child] = H[current];
-			H[current] = temp;
-			current = child;
-		}
+		Node* u = v->prev;
+		Node* w = v->next;
+		u->next = w;
+		w->prev = u;
+		delete v;
 	}
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 
 int main() {
-	Heap* h = new Heap();
-	h->push(7);
-	h->push(5);
-	h->push(2);
-	h->push(4);
-	h->push(0);
-	h->push(9);
-	h->push(1);
-	h->push(6);
-	h->push(3);
-	h->push(8);
+	DLL* dList = new DLL();
+	dList->addBack("hello");
+	dList->addBack("darkness");
+	dList->addBack("my");
+	dList->addBack("old");
+	dList->addBack("friend");
 
-	while (!h->empty()) {
-		printf("%d\n", h->root()->val);
-		h->pop();
+	while (!dList->empty()) {
+		printf("%s ", dList->front()->val);
+		dList->removeFront();
 	}
-	printf("FIN\n");
+	printf("\n");
 
 	return 0;
 }
