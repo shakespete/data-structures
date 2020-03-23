@@ -1,102 +1,91 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-// Trie Node
-class TrieNode {
-public:
-	TrieNode();
-	int key;
-	bool isEnd;
-	bool isDel;
-	TrieNode** children;
-};
-TrieNode::TrieNode() {
-	key = 0;
-	isEnd = false;
-	isDel = false;
-
-	children = new TrieNode * [26];
-	for (int i = 0; i < 26; ++i) {
-		children[i] = NULL;
-	}
-}
-
-// Trie
-class Trie {
-public:
-	Trie();
-	void insert(const char* str, int k);
-	int find(const char* str);
-	void remove(char* str);
-	TrieNode* root;
+struct Node {
+	int val;
 };
 
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(const char* str, int k) {
-	TrieNode* crawler = root;
+class Heap {
+	enum { DEF_CAP = 31 };
+public:
+	Heap(int cap = DEF_CAP);
+	~Heap();
+	int size() const;
+	bool empty() const;
+	Node* root() const;
+	void push(int e);
+	void pop();
+private:
+	Node** H;
+	int n;
+	int capacity;
+};
+Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
+Heap::~Heap() { while (!empty()) pop(); }
+int Heap::size() const { return n; }
+bool Heap::empty() const { return n == 0; }
+Node* Heap::root() const { return empty() ? NULL : H[1]; }
+void Heap::push(int e) {
+	if (size() != capacity) {
+		Node* v = new Node;
+		v->val = e;
+		++n;
+		H[n] = v;
+		
+		int current = n;
+		while (current > 1 && H[current]->val < H[current / 2]->val) {
+			int parent = current / 2;
 
-	int ctr = 0;
-	int index;
-
-	while (str[ctr] != '\0') {
-		index = str[ctr] - 'a';
-
-		if (crawler->children[index] == NULL)
-			crawler->children[index] = new TrieNode();
-
-		crawler = crawler->children[index];
-		ctr++;
+			Node* temp = H[parent];
+			H[parent] = H[current];
+			H[current] = temp;
+			current = parent;
+		}
 	}
-
-	crawler->isEnd = true;
-	crawler->key = k;
 }
-int Trie::find(const char* str) {
-	TrieNode* crawler = root;
-	int ctr = 0;
-	int index;
+void Heap::pop() {
+	if (!empty()) {
+		delete H[1];
+		H[1] = H[n];
+		--n;
 
-	while (str[ctr] != '\0') {
-		index = str[ctr] - 'a';
+		int current = 1;
+		while (current * 2 <= n) {
+			int child;
+			int left = current * 2;
+			int right = current * 2 + 1;
 
-		if (crawler->children[index] == NULL) return -1;
+			if (left == n) child = left;
+			else child = H[left]->val < H[right]->val ? left : right;
 
-		crawler = crawler->children[index];
-		ctr++;
+			if (H[child]->val > H[current]->val) break;
+
+			Node* temp = H[child];
+			H[child] = H[current];
+			H[current] = temp;
+			current = child;
+		}
 	}
-
-	if (crawler->isEnd && !crawler->isDel) return crawler->key;
-	return -1;
-}
-void Trie::remove(char* str) {
-	TrieNode* crawler = root;
-	int ctr = 0;
-	int index;
-
-	while (str[ctr] != '\0') {
-		index = str[ctr] - 'a';
-
-		if (crawler->children[index] == NULL) return;
-
-		crawler = crawler->children[index];
-		ctr++;
-	}
-
-	if (crawler->isEnd) crawler->isDel = true;
 }
 
-int uniqId = 0;
 int main() {
-	Trie* t = new Trie();
-	t->insert("sing", ++uniqId);
-	t->insert("sip", ++uniqId);
-	t->insert("ask", ++uniqId);
+	Heap* h = new Heap();
+	h->push(7);
+	h->push(5);
+	h->push(2);
+	h->push(4);
+	h->push(0);
+	h->push(9);
+	h->push(1);
+	h->push(6);
+	h->push(3);
+	h->push(8);
 
-	printf("%d\n", t->find("sing"));
-	printf("%d\n", t->find("sip"));
-	printf("%d\n", t->find("ask"));
-	printf("%d\n", t->find("sin"));
-	printf("%d\n", t->find("as"));
-	
+	while (!h->empty()) {
+		printf("%d\n", h->root()->val);
+		h->pop();
+	}
+	printf("FIN\n");
+
 	return 0;
 }
