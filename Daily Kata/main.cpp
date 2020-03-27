@@ -1,102 +1,57 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class TrieNode {
-public:
-	TrieNode();
-	int key;
-	int isEnd;
-	int isDel;
-	TrieNode** children;
+struct Node {
+	const char* val;
 };
-TrieNode::TrieNode() {
-	key = -1;
-	isEnd = false;
-	isDel = false;
 
-	children = new TrieNode*[26];
-	for (int i = 0; i < 26; ++i) {
-		children[i] = NULL;
-	}
-}
-
-class Trie {
+class Stack {
+	enum { DEF_CAP = 47 };
 public:
-	Trie();
-	void insert(const char* str, int k);
-	int find(const char* str);
-	void remove(const char* str);
+	Stack(int cap = DEF_CAP);
+	~Stack();
+	int size() const;
+	bool empty() const;
+	Node* top() const;
+	void push(const char* e);
+	void pop();
 private:
-	TrieNode* root;
+	Node** S;
+	int t;
+	int capacity;
 };
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(const char* str, int k) {
-	TrieNode* crawler = root;
-
-	int ctr = 0;
-	int index;
-	while (str[ctr] != '\0') {
-		index = str[ctr] - 'a';
-
-		if (crawler->children[index] == NULL)
-			crawler->children[index] = new TrieNode();
-
-		crawler = crawler->children[index];
-		ctr++;
+Stack::Stack(int cap) : S(new Node*[cap]), t(-1), capacity(cap) { }
+Stack::~Stack() { while (!empty()) pop(); }
+int Stack::size() const { return t + 1; }
+bool Stack::empty() const { return size() == 0; }
+Node* Stack::top() const { return empty() ? NULL : S[t]; }
+void Stack::push(const char* e) {
+	if (size() != capacity) {
+		Node* v = new Node;
+		v->val = e;
+		++t;
+		S[t] = v;
 	}
-
-	crawler->isEnd = true;
-	crawler->key = k;
 }
-int Trie::find(const char* str) {
-	TrieNode* crawler = root;
-
-	int ctr = 0;
-	int index;
-	while (str[ctr] != '\0') {
-		index = str[ctr] - 'a';
-
-		if (crawler->children[index] == NULL) return -1;
-
-		crawler = crawler->children[index];
-		ctr++;
+void Stack::pop() {
+	if (!empty()) {
+		delete S[t];
+		--t;
 	}
-
-	if (crawler->isEnd && !crawler->isDel) return crawler->key;
-	return -1;
-}
-void Trie::remove(const char* str) {
-	TrieNode* crawler = root;
-
-	int ctr = 0;
-	int index;
-	while (str[ctr] != '\0') {
-		index = str[ctr] - 'a';
-
-		if (crawler->children[index] == NULL) return;
-
-		crawler = crawler->children[index];
-		ctr++;
-	}
-
-	if (crawler->isEnd) crawler->isDel = true;
-	return;
-	
 }
 
-int uniqId = 0;
 int main() {
-	Trie* t = new Trie();
-	t->insert("sing", ++uniqId);
-	t->insert("sip", ++uniqId);
-	t->insert("ask", ++uniqId);
+	Stack* st = new Stack();
+	st->push("friend");
+	st->push("old");
+	st->push("my");
+	st->push("darkness");
+	st->push("hello");
 
-	printf("%d\n", t->find("sing"));
-	printf("%d\n", t->find("sip"));
-	printf("%d\n", t->find("ask"));
-	printf("%d\n", t->find("sin"));
-	printf("%d\n", t->find("as"));
-	t->remove("ask");
-	printf("%d\n", t->find("ask"));
+	while (!st->empty()) {
+		printf("%s ", st->top()->val);
+		st->pop();
+	}
+	printf("\n");
 	return 0;
 }
