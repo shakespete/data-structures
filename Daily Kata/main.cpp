@@ -1,94 +1,62 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-	const char* val;
-	Node* next;
-};
-
-class CLL {
+class DynamicArray {
+	enum { DEF_CAP = 7 };
 public:
-	CLL();
-	~CLL();
-	bool empty() const;
-	Node* front() const;
-	Node* back() const;
-	void add(const char* e);
-	void advance();
-	void remove();
-private:
-	Node* cursor;
-};
-
-CLL::CLL() : cursor(NULL) { }
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == NULL; }
-Node* CLL::front() const { return empty() ? NULL : cursor->next; }
-Node* CLL::back() const { return empty() ? NULL : cursor; }
-void CLL::add(const char* e) {
-	Node* v = new Node;
-	v->val = e;
-	if (empty()) {
-		v->next = v;
-		cursor = v;
-	}
-	else {
-		v->next = cursor->next;
-		cursor->next = v;
-	}
-}
-void CLL::advance() { if (!empty()) cursor = cursor->next; }
-void CLL::remove() {
-	if (!empty()) {
-		Node* old = cursor->next;
-		if (old == cursor) cursor = NULL;
-		else cursor->next = old->next;
-		delete old;
-	}
-}
-
-class Queue {
-public:
-	Queue();
-	~Queue();
+	DynamicArray(int cap = DEF_CAP);
+	~DynamicArray();
 	int size() const;
 	bool empty() const;
-	Node* front() const;
-	void enq(const char* e);
-	void deq();
+	int find(const int e) const;
+	void push(const int e);
+	int pop();
 private:
-	CLL CL;
+	int* A;
+	int capacity;
 	int n;
 };
-Queue::Queue() : CL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? NULL : CL.front(); }
-void Queue::enq(const char* e) {
-	CL.add(e);
-	CL.advance();
-	++n;
-}
-void Queue::deq() {
-	if (!empty()) {
-		CL.remove();
-		--n;
+
+DynamicArray::DynamicArray(int cap) : A(new int[cap]), n(0), capacity(cap) { }
+DynamicArray::~DynamicArray() { while (!empty()) pop(); }
+int DynamicArray::size() const { return n; }
+bool DynamicArray::empty() const { return n == 0; }
+int DynamicArray::find(const int e) const {
+	if (empty()) return -1;
+	for (int i = 0; i < n; ++i) {
+		if (A[i] == e) return i;
 	}
+		
+	return -1;
 }
+void DynamicArray::push(const int e) {
+	if (size() == capacity) {
+		int* B = new int[capacity];
+		for (int i = 0; i < capacity; ++i) B[i] = A[i];
+		A = B;
+		capacity *= 2;
+	}
+	A[n++] = e;
+}
+int DynamicArray::pop() { return A[--n]; }
 
 int main() {
-	Queue* q = new Queue();
-	q->enq("Hello");
-	q->enq("darkness");
-	q->enq("my");
-	q->enq("old");
-	q->enq("friend");
+	DynamicArray* da = new DynamicArray();
+	da->push(0);
+	da->push(1);
+	da->push(2);
+	da->push(3);
+	da->push(4);
+	da->push(5);
+	da->push(6);
+	da->push(7);
+	da->push(8);
+	da->push(9);
 
-	while (!q->empty()) {
-		printf("%s ", q->front()->val);
-		q->deq();
-	}
-	printf("\n");
+	printf("Size: %d\n", da->size());
+	printf("Find 9: %d\n", da->find(9));
+	printf("Top: %d\n", da->pop());
+	printf("Find 9: %d\n", da->find(9));
+	printf("Find 8: %d\n", da->find(8));
 	return 0;
 }
