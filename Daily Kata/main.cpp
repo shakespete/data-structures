@@ -1,62 +1,100 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class DynamicArray {
-	enum { DEF_CAP = 7 };
+class TrieNode {
 public:
-	DynamicArray(int cap = DEF_CAP);
-	~DynamicArray();
-	int size() const;
-	bool empty() const;
-	int find(const int e) const;
-	void push(const int e);
-	int pop();
-private:
-	int* A;
-	int capacity;
-	int n;
+	TrieNode();
+	int key;
+	bool isEnd;
+	bool isDel;
+	TrieNode** children;
 };
+TrieNode::TrieNode() {
+	key = 0;
+	isEnd = false;
+	isDel = false;
 
-DynamicArray::DynamicArray(int cap) : A(new int[cap]), n(0), capacity(cap) { }
-DynamicArray::~DynamicArray() { while (!empty()) pop(); }
-int DynamicArray::size() const { return n; }
-bool DynamicArray::empty() const { return n == 0; }
-int DynamicArray::find(const int e) const {
-	if (empty()) return -1;
-	for (int i = 0; i < n; ++i) {
-		if (A[i] == e) return i;
+	children = new TrieNode * [26];
+	for (int i = 0; i < 26; ++i) {
+		children[i] = NULL;
 	}
-		
+}
+
+class Trie {
+public:
+	Trie();
+	void insert(const char* str, const int e);
+	int find(const char* e);
+	void remove(const char* e);
+private:
+	TrieNode* root;
+};
+Trie::Trie() { root = new TrieNode(); }
+void Trie::insert(const char* str, const int e) {
+	TrieNode* crawler = root;
+
+	int ctr = 0;
+	int idx;
+	while (str[ctr] != '\0') {
+		idx = str[ctr] - 'a';
+
+		if (crawler->children[idx] == NULL)
+			crawler->children[idx] = new TrieNode();
+
+		crawler = crawler->children[idx];
+		ctr++;
+	}
+
+	crawler->isEnd = true;
+	crawler->key = e;
+}
+int Trie::find(const char* str) {
+	TrieNode* crawler = root;
+
+	int ctr = 0;
+	int idx;
+	while (str[ctr] != '\0') {
+		idx = str[ctr] - 'a';
+
+		if (crawler->children[idx] == NULL) return -1;
+
+		crawler = crawler->children[idx];
+		ctr++;
+	}
+
+	if (crawler->isEnd && !crawler->isDel) return crawler->key;
 	return -1;
 }
-void DynamicArray::push(const int e) {
-	if (size() == capacity) {
-		int* B = new int[capacity];
-		for (int i = 0; i < capacity; ++i) B[i] = A[i];
-		A = B;
-		capacity *= 2;
+void Trie::remove(const char* str) {
+	TrieNode* crawler = root;
+
+	int ctr = 0;
+	int idx;
+	while (str[ctr] != '\0') {
+		idx = str[ctr] - 'a';
+
+		if (crawler->children[idx] == NULL) return;
+
+		crawler = crawler->children[idx];
+		ctr++;
 	}
-	A[n++] = e;
+
+	if (crawler->isEnd) crawler->isDel = true;
+	return;
 }
-int DynamicArray::pop() { return A[--n]; }
 
 int main() {
-	DynamicArray* da = new DynamicArray();
-	da->push(0);
-	da->push(1);
-	da->push(2);
-	da->push(3);
-	da->push(4);
-	da->push(5);
-	da->push(6);
-	da->push(7);
-	da->push(8);
-	da->push(9);
+	int uniqId = 0;
+	Trie* t = new Trie();
+	t->insert("sing", ++uniqId);
+	t->insert("sip", ++uniqId);
+	t->insert("ask", ++uniqId);
 
-	printf("Size: %d\n", da->size());
-	printf("Find 9: %d\n", da->find(9));
-	printf("Top: %d\n", da->pop());
-	printf("Find 9: %d\n", da->find(9));
-	printf("Find 8: %d\n", da->find(8));
+	printf("%d\n", t->find("sing"));
+	printf("%d\n", t->find("sip"));
+	printf("%d\n", t->find("ask"));
+	printf("%d\n", t->find("sin"));
+	printf("%d\n", t->find("as"));
+	return 0;
 	return 0;
 }
