@@ -1,92 +1,97 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-	const char* val;
-	Node* next;
-};
-
-class CLL {
+class TrieNode {
 public:
-	CLL();
-	~CLL();
-	bool empty() const;
-	Node* front() const;
-	Node* back() const;
-	void add(const char* e);
-	void advance();
-	void remove();
-private:
-	Node* cursor;
+	TrieNode();
+	int key;
+	bool isEnd;
+	bool isDel;
+	TrieNode** children;
 };
-CLL::CLL() : cursor(NULL) { }
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == NULL; }
-Node* CLL::front() const { return empty() ? NULL : cursor->next; }
-Node* CLL::back() const { return empty() ? NULL : cursor; }
-void CLL::add(const char* e) {
-	Node* v = new Node;
-	v->val = e;
-	if (empty()) {
-		v->next = v;
-		cursor = v;
-	}
-	else {
-		v->next = cursor->next;
-		cursor->next = v;
-	}
-}
-void CLL::advance() { if (!empty()) cursor = cursor->next; }
-void CLL::remove() {
-	if (!empty()) {
-		Node* old = cursor->next;
-		if (old == cursor) cursor = NULL;
-		else cursor->next = old->next;
-		delete old;
-	}
+TrieNode::TrieNode() {
+	key = -1;
+	isEnd = false;
+	isDel = false;
+
+	children = new TrieNode * [26];
+	for (int i = 0; i < 26; ++i) children[i] = NULL;
 }
 
-class Queue {
+class Trie {
 public:
-	Queue();
-	~Queue();
-	int size() const;
-	bool empty() const;
-	Node* front() const;
-	void enq(const char* e);
-	void deq();
+	Trie();
+	void insert(const char* str, const int e);
+	int find(const char* str);
+	void remove(const char* e);
 private:
-	CLL CL;
-	int n;
+	TrieNode* root;
 };
-Queue::Queue() : CL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? NULL : CL.front(); }
-void Queue::enq(const char* e) {
-	CL.add(e);
-	CL.advance();
-	++n;
-}
-void Queue::deq() {
-	if (!empty()) {
-		CL.remove();
-		--n;
+
+Trie::Trie() { root = new TrieNode(); }
+void Trie::insert(const char* str, const int e) {
+	TrieNode* crawler = root;
+	
+	int idx;
+	int ctr = 0;
+	while (str[ctr] != '\0') {
+		idx = str[ctr] - 'a';
+		
+		if (crawler->children[idx] == NULL)
+			crawler->children[idx] = new TrieNode();
+
+		crawler = crawler->children[idx];
+		++ctr;
 	}
+
+	crawler->isEnd = true;
+	crawler->key = e;
+}
+int Trie::find(const char* str) {
+	TrieNode* crawler = root;
+
+	int idx;
+	int ctr = 0;
+	while (str[ctr] != '\0') {
+		idx = str[ctr] - 'a';
+
+		if (crawler->children[idx] == NULL) return -1;
+
+		crawler = crawler->children[idx];
+		++ctr;
+	}
+
+	if (crawler->isEnd && !crawler->isDel) return crawler->key;
+	return -1;
+}
+void Trie::remove(const char* str) {
+	TrieNode* crawler = root;
+
+	int idx;
+	int ctr = 0;
+	while (str[ctr] != '\0') {
+		idx = str[ctr] - 'a';
+
+		if (crawler->children[idx] == NULL) return;
+
+		crawler = crawler->children[idx];
+		++ctr;
+	}
+
+	if (crawler->isEnd) crawler->isDel = true;
 }
 
+int uniqId = 0;
 int main() {
-	Queue* q = new Queue();
-	q->enq("Hello");
-	q->enq("darkness");
-	q->enq("my");
-	q->enq("old");
-	q->enq("friend");
-	while (!q->empty()) {
-		printf("%s ", q->front()->val);
-		q->deq();
-	}
-	printf("\nFIN\n");
+	Trie* t = new Trie();
+	t->insert("sing", ++uniqId);
+	t->insert("sip", ++uniqId);
+	t->insert("ask", ++uniqId);
+
+	printf("%d\n", t->find("sing"));
+	printf("%d\n", t->find("sip"));
+	printf("%d\n", t->find("ask"));
+	printf("%d\n", t->find("sin"));
+	printf("%d\n", t->find("as"));
 	return 0;
 }
