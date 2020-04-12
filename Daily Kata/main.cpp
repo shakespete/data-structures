@@ -2,91 +2,52 @@
 #include <stdio.h>
 
 struct Node {
-	int val;
+	const char* val;
+	Node* next;
 };
 
-class Heap {
-	enum { DEF_CAP = 71 };
+class LL {
 public:
-	Heap(int cap = DEF_CAP);
-	~Heap();
-	int size() const;
+	LL();
+	~LL();
 	bool empty() const;
-	Node* root() const;
-	void push(const int e);
-	void pop();
+	Node* front() const;
+	void add(const char* e);
+	void remove();
 private:
-	Node** H;
-	int n;
-	int capacity;
+	Node* head;
 };
-Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
-Heap::~Heap() { while (!empty()) pop(); }
-int Heap::size() const { return n; }
-bool Heap::empty() const { return n == 0; }
-Node* Heap::root() const { return empty() ? NULL : H[1]; }
-void Heap::push(const int e) {
-	if (size() != capacity) {
-		Node* v = new Node;
-		v->val = e;
-		++n;
-		H[n] = v;
-
-		int current = n;
-		while (current > 1 && H[current]->val < H[current / 2]->val) {
-			int parent = current / 2;
-
-			Node* temp = H[parent];
-			H[parent] = H[current];
-			H[current] = temp;
-			current = parent;
-		}
-		
-	}
+LL::LL() : head(NULL) { }
+LL::~LL() { while (!empty()) remove(); }
+bool LL::empty() const { return head == NULL; }
+Node* LL::front() const { return empty() ? NULL : head; }
+void LL::add(const char* e) {
+	Node* v = new Node;
+	v->val = e;
+	v->next = head;
+	head = v;
 }
-void Heap::pop() {
+void LL::remove() {
 	if (!empty()) {
-		delete H[1];
-		H[1] = H[n];
-		--n;
-
-		int current = 1;
-		while (current * 2 <= n) {
-			int child;
-			int left = current * 2;
-			int right = current * 2 + 1;
-
-			if (left == n) child = left;
-			else child = H[left]->val < H[right]->val ? left : right;
-
-			if (H[child]->val > H[current]->val) break;
-
-			Node* temp = H[child];
-			H[child] = H[current];
-			H[current] = temp;
-			current = child;
-		}
+		Node* old = head;
+		head = old->next;
+		delete old;
 	}
 }
 
 int main() {
-	Heap* h = new Heap();
-	h->push(7);
-	h->push(5);
-	h->push(2);
-	h->push(4);
-	h->push(0);
-	h->push(9);
-	h->push(1);
-	h->push(6);
-	h->push(3);
-	h->push(8);
+	LL* list = new LL();
+	list->add("friend");
+	list->add("old");
+	list->add("my");
+	list->add("darkness");
+	list->add("hello");
 
-	while (!h->empty()) {
-		printf("%d\n", h->root()->val);
-		h->pop();
+	while (!list->empty()) {
+		printf("%s ", list->front()->val);
+		list->remove();
 	}
-	printf("FIN\n");
+	printf("\n");
 
 	return 0;
 }
