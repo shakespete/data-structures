@@ -1,90 +1,55 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-	int val;
-};
-
-class Heap {
+class Stack {
 	enum { DEF_CAP = 100 };
 public:
-	Heap(int cap = DEF_CAP);
-	~Heap();
+	Stack(int cap = DEF_CAP);
+	~Stack();
 	int size() const;
 	bool empty() const;
-	Node* root();
+	int top() const;
 	void push(const int e);
 	void pop();
 private:
-	Node** H;
-	int n;
+	int* S;
+	int t;
 	int capacity;
 };
-Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
-Heap::~Heap() { while (!empty()) pop(); }
-int Heap::size() const { return n; }
-bool Heap::empty() const { return n == 0; }
-Node* Heap::root() { return empty() ? NULL : H[1]; }
-void Heap::push(const int e) {
+Stack::Stack(int cap) : S(new int[cap]), t(-1), capacity(cap) { }
+Stack::~Stack() { while (!empty()) pop(); }
+int Stack::size() const { return t + 1; }
+bool Stack::empty() const { return size() == 0; }
+int Stack::top() const { return empty() ? -1 : S[t]; }
+void Stack::push(const int e) {
 	if (size() != capacity) {
-		Node* v = new Node;
-		v->val = e;
-		++n;
-		H[n] = v;
-
-		int current = n;
-		while (current > 1 && H[current]->val < H[current / 2]->val) {
-			int parent = current / 2;
-
-			Node* temp = H[parent];
-			H[parent] = H[current];
-			H[current] = temp;
-			current = parent;
-		}
+		S[++t] = e;
 	}
 }
-void Heap::pop() {
+void Stack::pop() {
 	if (!empty()) {
-		delete H[1];
-		H[1] = H[n];
-		--n;
-
-		int current = 1;
-		while (current * 2 <= n) {
-			int child;
-			int left = current * 2;
-			int right = current * 2 + 1;
-
-			if (left == n) child = left;
-			else child = H[left]->val < H[right]->val ? left : right;
-
-			if (H[child]->val > H[current]->val) break;
-
-			Node* temp = H[child];
-			H[child] = H[current];
-			H[current] = temp;
-			current = child;
-		}
+		--t;
 	}
 }
 
 int main() {
-	Heap* h = new Heap();
-	h->push(7);
-	h->push(5);
-	h->push(2);
-	h->push(4);
-	h->push(0);
-	h->push(9);
-	h->push(1);
-	h->push(6);
-	h->push(3);
-	h->push(8);
+	Stack* st = new Stack();
 
-	while (!h->empty()) {
-		printf("%d\n", h->root()->val);
-		h->pop();
+	st->push(9);
+	st->push(8);
+	st->push(7);
+	st->push(6);
+	st->push(5);
+	st->push(4);
+	st->push(3);
+	st->push(2);
+	st->push(1);
+	st->push(0);
+
+	while (!st->empty()) {
+		printf("%d\n", st->top());
+		st->pop();
 	}
-	printf("FIN\n");
+
 	return 0;
 }
