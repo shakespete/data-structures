@@ -1,98 +1,93 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class TrieNode {
-public:
-	TrieNode();
-	int key;
-	bool isEnd;
-	bool isDel;
-	TrieNode** children;
+struct Node {
+	const char* val;
+	Node* next;
 };
-TrieNode::TrieNode() {
-	key = -1;
-	isEnd = false;
-	isDel = false;
-	children = new TrieNode * [26];
-	for (int i = 0; i < 26; ++i) {
-		children[i] = NULL;
-	}
-}
 
-class Trie {
+class CLL {
 public:
-	Trie();
-	void insert(const char* str, int k);
-	int find(const char* str);
-	void remove(const char* str);
+	CLL();
+	~CLL();
+	bool empty() const;
+	Node* front();
+	Node* back();
+	void add(const char* e);
+	void advance();
+	void remove();
 private:
-	TrieNode* root;
+	Node* cursor;
 };
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(const char* str, int k) {
-	TrieNode* crawler = root;
 
-	int ctr = 0;
-	int idx;
-	while (str[ctr] != '\0') {
-		idx = str[ctr] - 'a';
-		
-		if (crawler->children[idx] == NULL)
-			crawler->children[idx] = new TrieNode();
+CLL::CLL() : cursor(NULL) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node* CLL::front() { return empty() ? NULL : cursor->next; }
+Node* CLL::back() { return empty() ? NULL : cursor; }
+void CLL::add(const char* e) {
+	Node* v = new Node();
+	v->val = e;
 
-		crawler = crawler->children[idx];
-		++ctr;
+	if (empty()) {
+		v->next = v;
+		cursor = v;
 	}
-
-	crawler->key = k;
-	crawler->isEnd = true;
+	else {
+		v->next = cursor->next;
+		cursor->next = v;
+	}
 }
-int Trie::find(const char* str) {
-	TrieNode* crawler = root;
-
-	int ctr = 0;
-	int idx;
-	while (str[ctr] != '\0') {
-		idx = str[ctr] - 'a';
-
-		if (crawler->children[idx] == NULL) return -1;
-
-		crawler = crawler->children[idx];
-		++ctr;
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::remove() {
+	if (!empty()) {
+		Node* old = cursor->next;
+		if (old == cursor) cursor = NULL;
+		else cursor->next = old->next;
+		delete old;
 	}
-
-	if (crawler->isEnd && !crawler->isDel) return crawler->key;
-	return -1;
-}
-void Trie::remove(const char* str) {
-	TrieNode* crawler = root;
-
-	int ctr = 0;
-	int idx;
-	while (str[ctr] != '\0') {
-		idx = str[ctr] - 'a';
-
-		if (crawler->children[idx] == NULL) return;
-
-		crawler = crawler->children[idx];
-		++ctr;
-	}
-
-	if (crawler->isEnd && !crawler->isDel) crawler->isDel = true;
-	return;
 }
 
-int uniqId = 0;
+class Queue {
+public:
+	Queue();
+	~Queue();
+	int size();
+	bool empty();
+	Node* front();
+	void enq(const char* e);
+	void deq();
+private:
+	CLL CL;
+	int n;
+};
+
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() { return n; }
+bool Queue::empty() { return n == 0; }
+Node* Queue::front() { return empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+	CL.add(e);
+	CL.advance();
+	++n;
+}
+void Queue::deq() {
+	CL.remove();
+	--n;
+}
+
 int main() {
-	Trie* t = new Trie();
-	t->insert("sing", ++uniqId);
-	t->insert("sip", ++uniqId);
-	t->insert("ask", ++uniqId);
+	Queue* q = new Queue();
+	q->enq("Hello");
+	q->enq("darkness");
+	q->enq("my");
+	q->enq("old");
+	q->enq("friend");
 
-	printf("%d\n", t->find("sing"));
-	printf("%d\n", t->find("sip"));
-	printf("%d\n", t->find("ask"));
-	printf("%d\n", t->find("sin"));
-	printf("%d\n", t->find("as"));
+	while (!q->empty()) {
+		printf("%s ", q->front()->val);
+		q->deq();
+	}
 	return 0;
 }
