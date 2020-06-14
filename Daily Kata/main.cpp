@@ -1,95 +1,46 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-	const char* val;
-	Node* next;
-};
-
-class CLL {
+class Stack {
+	enum { DEF_CAP = 100 };
 public:
-	CLL();
-	~CLL();
-	bool empty() const;
-	Node* front() const;
-	Node* back() const;
-	void advance();
-	void add(const char* e);
-	void remove();
-private:
-	Node* cursor;
-};
-
-CLL::CLL() : cursor(NULL) { }
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == NULL; }
-Node* CLL::front() const { return empty() ? NULL : cursor->next; }
-Node* CLL::back() const { return empty() ? NULL : cursor; }
-void CLL::advance() { if (!empty()) cursor = cursor->next; }
-void CLL::add(const char* e) {
-	Node* v = new Node;
-	v->val = e;
-	if (empty()) {
-		v->next = v;
-		cursor = v;
-	}
-	else {
-		v->next = cursor->next;
-		cursor->next = v;
-	}
-}
-void CLL::remove() {
-	if (!empty()) {
-		Node* old = cursor->next;
-		if (old == cursor) cursor = NULL;
-		else cursor->next = old->next;
-		delete old;
-	}
-}
-
-class Queue {
-public:
-	Queue();
-	~Queue();
+	Stack(int cap = DEF_CAP);
+	~Stack();
 	int size() const;
 	bool empty() const;
-	Node* front();
-	void enq(const char* e);
-	void deq();
+	int top() const;
+	void push(const int e);
+	void pop();
 private:
-	CLL CL;
-	int n;
+	int* S;
+	int t;
+	int capacity;
 };
 
-Queue::Queue() : CL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() { return empty() ? NULL : CL.front(); }
-void Queue::enq(const char* e) {
-	CL.add(e);
-	CL.advance();
-	++n;
-}
-void Queue::deq() {
-	if (!empty()) {
-		CL.remove();
-		--n;
-	}
-}
+Stack::Stack(int cap) : S(new int[cap]), t(-1), capacity(cap) { };
+Stack::~Stack() { while (!empty()) pop(); }
+int Stack::size() const { return t + 1; }
+bool Stack::empty() const { return size() == 0; }
+int Stack::top() const { return empty() ? -1 : S[t]; }
+void Stack::push(const int e) { S[++t] = e; }
+void Stack::pop() { if (!empty()) --t; }
+
 
 int main() {
-	Queue* q = new Queue();
-	q->enq("Hello");
-	q->enq("darkness");
-	q->enq("my");
-	q->enq("old");
-	q->enq("friend");
+	Stack* st = new Stack();
+	st->push(9);
+	st->push(8);
+	st->push(7);
+	st->push(6);
+	st->push(5);
+	st->push(4);
+	st->push(3);
+	st->push(2);
+	st->push(1);
 
-	while (!q->empty()) {
-		printf("%s ", q->front()->val);
-		q->deq();
+	while(!st->empty()) {
+		printf("%d ", st->top());
+		st->pop();
 	}
-
 	return 0;
 }
