@@ -1,92 +1,57 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-    int val;
-};
-
-class Heap {
-    enum {DEF_CAP = 100};
+class DynamicStack {
+    enum { DEF_CAP = 5 };
 public:
-    Heap(int cap  = DEF_CAP);
-    ~Heap();
+    DynamicStack(int cap = DEF_CAP);
+    ~DynamicStack();
     int size() const;
     bool empty() const;
-    Node* root() const;
+    int front() const;
     void push(const int e);
-    void pop();
+    int pop();
 private:
-    Node** H;
-    int n;
+    int* S;
+    int t;
     int capacity;
 };
 
-Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
-Heap::~Heap() {while (!empty()) pop(); }
-int Heap::size() const { return n; }
-bool Heap::empty() const { return n == 0; }
-Node* Heap::root() const { return empty() ? NULL : H[1]; }
-void Heap::push(const int e) {
-    if (size() != capacity) {
-        Node* v = new Node;
-        v->val = e;
-        ++n;
-        H[n] = v;
-        
-        int current = n;
-        while (current > 1 && H[current]->val < H[current / 2]->val) {
-            int parent = current / 2;
-            
-            Node* temp = H[parent];
-            H[parent] = H[current];
-            H[current] = temp;
-            current = parent;
-        }
+DynamicStack::DynamicStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { }
+DynamicStack::~DynamicStack() { while(!empty()) pop(); }
+int DynamicStack::size() const { return t + 1; }
+bool DynamicStack::empty() const { return size() == 0; }
+int DynamicStack::front() const { return empty() ? -1 : S[t]; }
+void DynamicStack::push(const int e) {
+    if (size() == capacity) {
+        int* B = new int[capacity * 2];
+        for (int i = 0; i < capacity; ++i) B[i] = S[i];
+        S = B;
+        capacity *= 2;
     }
+    S[++t] = e;
 }
-void Heap::pop() {
-    if (!empty()) {
-        delete H[1];
-        H[1] = H[n];
-        --n;
-        
-        int current = 1;
-        while (current * 2 <= n) {
-            int child;
-            int left = current * 2;
-            int right = current * 2 + 1;
-            
-            if (left == n) child = left;
-            else child = H[left]->val < H[right]->val ? left : right;
-            
-            if (H[child]->val > H[current]->val) break;
-            
-            Node* temp = H[child];
-            H[child] = H[current];
-            H[current] = temp;
-            current = child;
-        }
-    }
-}
+int DynamicStack::pop() { return S[t--]; }
 
-int main () {
-    Heap* h = new Heap();
-    h->push(7);
-    h->push(5);
-    h->push(2);
-    h->push(4);
-    h->push(0);
-    h->push(9);
-    h->push(1);
-    h->push(6);
-    h->push(3);
-    h->push(8);
-
-    while (!h->empty()) {
-        printf("%d\n", h->root()->val);
-        h->pop();
-    }
-    printf("FIN\n");
-
+int main() {
+    DynamicStack* ds = new DynamicStack();
+    ds->push(1);
+    ds->push(2);
+    ds->push(3);
+    ds->push(4);
+    ds->push(5);
+    ds->push(6);
+    ds->push(7);
+    ds->push(8);
+    ds->push(9);
+    ds->push(10);
+    ds->push(11);
+    ds->push(12);
+    ds->push(13);
+    ds->push(14);
+    ds->push(15);
+    
+    while (!ds->empty()) { printf("%d ", ds->pop()); }
+    printf("\nFIN\n");
     return 0;
 }
