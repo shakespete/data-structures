@@ -2,91 +2,146 @@
 #include <stdio.h>
 
 struct Node {
-    int val;
+    const char* val;
+    Node* prev;
+    Node* next;
 };
 
-class Heap {
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->next = tail;
+    tail->prev = head;
+    head->val = NULL;
+    tail->val = NULL;
+}
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
+    }
+}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
+class HashMap {
     enum { DEF_CAP = 100 };
 public:
-    Heap(int cap = DEF_CAP);
-    ~Heap();
-    int size() const;
-    bool empty() const;
-    Node* root() const;
-    void push(const int e);
-    void pop();
+    HashMap(int cap = DEF_CAP);
+    int hash(const char* e) const;
+    void insert(const char* e);
+    void remove(const char* e);
+    Node* retrieve(const char* e);
 private:
-    Node** H;
-    int n;
+    DLL* HM;
     int capacity;
 };
 
-Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
-Heap::~Heap() { while (!empty()) pop(); }
-int Heap::size() const { return n; }
-bool Heap::empty() const { return n == 0; }
-Node* Heap::root() const { return empty() ? NULL : H[1]; }
-void Heap::push(const int e) {
-    if (size() != capacity) {
-        Node* v = new Node;
-        v->val = e;
-        ++n;
-        H[n] = v;
-        
-        int current = n;
-        while (current > 1 && H[current]->val < H[current / 2]->val) {
-            int parent = current / 2;
-            
-            Node* temp = H[parent];
-            H[parent] = H[current];
-            H[current] = temp;
-            current = parent;
-        }
+bool is_equal(const char* a, const char* b) {
+    while (*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
     }
+    return false;
 }
-void Heap::pop() {
-    if (!empty()) {
-        delete H[1];
-        H[1] = H[n];
-        --n;
-        
-        int current = 1;
-        while (current * 2 <= n) {
-            int child;
-            int left = current * 2;
-            int right = current * 2 + 1;
-            
-            if (left == n) child = left;
-            else child = H[left]->val < H[right]->val ? left : right;
-            
-            if (H[child]->val > H[current]->val) break;
-            
-            Node* temp = H[child];
-            H[child] = H[current];
-            H[current] = temp;
-            current = child;
-        }
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(const char* e) const {
+    int hash = 31;
+    int c;
+    while (c = *e++) {
+        hash = (((hash << 5) + hash) + c) % capacity;
     }
+    return hash % capacity;
+}
+void HashMap::insert(const char* e) {
+    int hashVal = hash(e);
+    HM[hashVal].addBack(e);
+}
+void HashMap::remove(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(e);
+    if (node != NULL) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return NULL;
+    
+    Node* node = HM[hashVal].front();
+    while (node->val != NULL) {
+        if (is_equal(e, node->val)) return node;
+        node = node->next;
+    }
+    return NULL;
 }
 
 int main() {
-    Heap* h = new Heap();
-    h->push(7);
-    h->push(5);
-    h->push(2);
-    h->push(4);
-    h->push(0);
-    h->push(9);
-    h->push(1);
-    h->push(6);
-    h->push(3);
-    h->push(8);
-
-    while (!h->empty()) {
-        printf("%d\n", h->root()->val);
-        h->pop();
-    }
-    printf("FIN\n");
-
+    HashMap* hm = new HashMap();
+    hm->insert("prepare");
+    hm->insert("to");
+    hm->insert("die");
+    hm->insert("name");
+    hm->insert("you");
+    hm->insert("Inigo");
+    hm->insert("is");
+    hm->insert("killed");
+    hm->insert("My");
+    hm->insert("father");
+    hm->insert("my");
+    hm->insert("Montoya");
+    
+    printf("%s ", hm->retrieve("My")->val);
+    printf("%s ", hm->retrieve("name")->val);
+    printf("%s ", hm->retrieve("is")->val);
+    printf("%s ", hm->retrieve("Inigo")->val);
+    printf("%s ", hm->retrieve("Montoya")->val);
+    printf("%s ", hm->retrieve("you")->val);
+    printf("%s ", hm->retrieve("killed")->val);
+    printf("%s ", hm->retrieve("my")->val);
+    printf("%s ", hm->retrieve("father")->val);
+    printf("%s ", hm->retrieve("prepare")->val);
+    printf("%s ", hm->retrieve("to")->val);
+    printf("%s ", hm->retrieve("die")->val);
+    printf("\n");
     return 0;
 }
