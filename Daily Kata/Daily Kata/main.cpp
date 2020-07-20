@@ -1,111 +1,91 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class TrieNode {
-public:
-    TrieNode();
-    int key;
-    bool isEnd;
-    bool isDel;
-    TrieNode** children;
+struct Node {
+    const char* val;
+    Node* next;
 };
-TrieNode::TrieNode() {
-    key = -1;
-    isEnd = false;
-    isDel = false;
-    children = new TrieNode*[26];
-    for (int i = 0; i < 26; ++i) {
-        children[i] = NULL;
-    }
-}
-
-class Trie {
+class CLL {
 public:
-    Trie();
-    void insert(const char* str, const int k);
-    int find(const char* str);
-    void remove(const char* str);
+    CLL();
+    ~CLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(const char* e);
+    void advance();
+    void remove();
 private:
-    TrieNode* root;
+    Node* cursor;
 };
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(const char* str, const int k) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    while (str[ctr] != '\0') {
-        idx = str[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL)
-            crawler->children[idx] = new TrieNode();
-        
-        crawler = crawler->children[idx];
-        ++ctr;
+CLL::CLL() : cursor(NULL) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node* CLL::front() const { return empty() ? NULL : cursor->next; }
+Node* CLL::back() const { return empty() ? NULL : cursor; }
+void CLL::add(const char* e) {
+    Node* v = new Node;
+    v->val = e;
+    if (empty()) {
+        v->next = v;
+        cursor = v;
+    } else {
+        v->next = cursor->next;
+        cursor->next = v;
     }
-    
-    crawler->isEnd = true;
-    crawler->key = k;
 }
-int Trie::find(const char* str) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    while (str[ctr] != '\0') {
-        idx = str[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL) return -1;
-        
-        crawler = crawler->children[idx];
-        ++ctr;
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::remove() {
+    if (!empty()) {
+        Node* old = cursor->next;
+        if (old == cursor) cursor = NULL;
+        else cursor->next = old->next;
+        delete old;
     }
-    
-    if (crawler->isEnd && !crawler->isDel) return crawler->key;
-    return -1;
-}
-void Trie::remove(const char* str) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    while (str[ctr] != '\0') {
-        idx = str[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL) return;
-        
-        crawler = crawler->children[idx];
-        ++ctr;
-    }
-    
-    if (crawler->isEnd && !crawler->isDel) crawler->isDel = true;
-    return;
 }
 
-int uniq_id = 0;
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(const char* e);
+    void deq();
+private:
+    CLL CL;
+    int n;
+};
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+    CL.add(e);
+    CL.advance();
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        CL.remove();
+        --n;
+    }
+}
+
 int main() {
-    Trie* t = new Trie();
-    t->insert("hello", uniq_id);
-    uniq_id++;
-    t->insert("darkness", uniq_id);
-    uniq_id++;
-    t->insert("my", uniq_id);
-    uniq_id++;
-    t->insert("old", uniq_id);
-    uniq_id++;
-    t->insert("friend", uniq_id);
+    Queue* q = new Queue();
+    q->enq("Hello");
+    q->enq("darkness");
+    q->enq("my");
+    q->enq("old");
+    q->enq("friend");
     
-    printf("%d ", t->find("hello"));
-    printf("%d ", t->find("darkness"));
-    printf("%d ", t->find("my"));
-    printf("%d ", t->find("old"));
-    printf("%d ", t->find("friend"));
-    t->remove("darkness");
-    t->remove("old");
-    t->remove("friend");
-    printf("%d ", t->find("darkness"));
-    printf("%d ", t->find("old"));
-    printf("%d ", t->find("friend"));
-    
+    while (!q->empty()) {
+        printf("%s ", q->front()->val);
+        q->deq();
+    }
+    printf("\n");
     return 0;
 }
