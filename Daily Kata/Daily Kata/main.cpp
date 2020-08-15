@@ -3,129 +3,91 @@
 
 struct Node {
     const char* val;
-    Node* prev;
     Node* next;
 };
 
-class DLL {
+class CLL {
 public:
-    DLL();
-    ~DLL();
+    CLL();
+    ~CLL();
     bool empty() const;
     Node* front() const;
     Node* back() const;
-    void add(Node* v, const char* e);
-    void addFront(const char* e);
-    void addBack(const char* e);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
+    void advance();
+    void add(const char* e);
+    void remove();
 private:
-    Node* head;
-    Node* tail;
+    Node* cursor;
 };
 
-DLL::DLL() {
-    head = new Node();
-    tail = new Node();
-    head->next = tail;
-    tail->prev = head;
-    head->val = NULL;
-    tail->val = NULL;
+CLL::CLL() : cursor(NULL) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node* CLL::front() const { return empty() ? NULL : cursor->next; }
+Node* CLL::back() const { return empty() ? NULL : cursor; }
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::add(const char* e) {
+    Node* v = new Node;
+    v->val = e;
+    if (empty()) {
+        v->next = v;
+        cursor = v;
+    } else {
+        v->next = cursor->next;
+        cursor->next = v;
+    }
 }
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? NULL : head->next; }
-Node* DLL::back() const { return empty() ? NULL : tail->prev; }
-void DLL::add(Node* v, const char* e) {
-    Node* u = new Node();
-    u->val = e;
-    u->prev = v->prev;
-    u->next = v;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(const char* e) { add(head->next, e); }
-void DLL::addBack(const char* e) { add(tail, e); }
-void DLL::remove(Node* v) {
+void CLL::remove() {
     if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
+        Node* old = cursor->next;
+        if (old == cursor) cursor = NULL;
+        else cursor->next = old->next;
+        delete old;
     }
 }
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() {if (!empty()) remove(tail->prev); }
 
-class HashMap {
-    enum { DEF_CAP = 50 };
+class Queue {
 public:
-    HashMap(int cap = DEF_CAP);
-    int hash(const char* e);
-    void insert(const char* e);
-    void remove(const char* e);
-    Node* retrieve(const char* e);
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(const char* e);
+    void deq();
 private:
-    DLL* HM;
-    int capacity;
+    CLL CL;
+    int n;
 };
 
-bool is_equal(const char* a, const char* b) {
-    while (*a == *b) {
-        if (*a == '\0') return true;
-        ++a;
-        ++b;
-    }
-    return false;
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+    CL.add(e);
+    CL.advance();
+    ++n;
 }
-
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(const char* e) {
-    int hash = 31;
-    int c;
-    while (c = *e++) {
-        hash = (((hash << 5) + hash) + c) % capacity;
-    }
-    return hash % capacity;
-}
-void HashMap::insert(const char* e) {
-    int hashVal = hash(e);
-    HM[hashVal].addBack(e);
-}
-void HashMap::remove(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return;
-    
-    Node* node = retrieve(e);
-    if (node != NULL) HM[hashVal].remove(node);
-    return;
-}
-Node* HashMap::retrieve(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return NULL;
-    
-    Node* node = HM[hashVal].front();
-    while (node->val != NULL) {
-        if (is_equal(e, node->val)) return node;
-        node = node->next;
-    }
-    return NULL;
+void Queue::deq() {
+    if (!empty()) CL.remove();
+    --n;
 }
 
 int main() {
-    HashMap* hm = new HashMap();
-    hm->insert("old");
-    hm->insert("darkness");
-    hm->insert("friend");
-    hm->insert("my");
-    hm->insert("Hello");
+    Queue* q = new Queue();
+    q->enq("My");
+    q->enq("name");
+    q->enq("is");
+    q->enq("Inigo");
+    q->enq("Montoya");
     
-    printf("%s ", hm->retrieve("Hello")->val);
-    printf("%s ", hm->retrieve("darkness")->val);
-    printf("%s ", hm->retrieve("my")->val);
-    printf("%s ", hm->retrieve("old")->val);
-    printf("%s\n", hm->retrieve("friend")->val);
+    while (!q->empty()) {
+        printf("%s ", q->front()->val);
+        q->deq();
+    }
+    printf("\n");
+    
     return 0;
 }
