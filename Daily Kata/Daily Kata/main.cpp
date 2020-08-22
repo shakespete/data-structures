@@ -3,68 +3,50 @@
 
 struct Node {
     const char* val;
+    Node* next;
 };
 
-class Stack {
-    enum { DEF_CAP = 5 };
+class LL {
 public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
+    LL();
+    ~LL();
     bool empty() const;
-    Node* top() const;
-    void push(const char* e);
-    void pop();
+    Node* front() const;
+    void add(const char* e);
+    void remove();
 private:
-    Node** S;
-    int t;
-    int capacity;
+    Node* head;
 };
 
-Stack::Stack(int cap) : S(new Node*[cap]), t(-1), capacity(cap) { }
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1;}
-bool Stack::empty() const { return size() == 0; }
-Node* Stack::top() const { return empty() ? NULL : S[t]; }
-void Stack::push(const char* e) {
+LL::LL() : head(NULL) { }
+LL::~LL() { while (!empty()) remove(); }
+bool LL::empty() const { return head == NULL; }
+Node* LL::front() const { return empty() ? NULL : head; }
+void LL::add(const char* e) {
     Node* v = new Node;
     v->val = e;
-    if (size() == capacity) {
-        Node** B = new Node*[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = S[i];
-        S = B;
-        capacity *= 2;
-    }
-    ++t;
-    S[t] = v;
+    v->next = head;
+    head = v;
 }
-void Stack::pop() {
-    if (!empty()) delete S[t];
-    --t;
+void LL::remove() {
+    if (!empty()) {
+        Node* old = head;
+        head = old->next;
+        delete old;
+    }
 }
 
 int main() {
-    Stack* st = new Stack();
-    st->push("silence");
-    st->push("in");
-    st->push("be");
-    st->push("may");
-    st->push("there");
-    st->push("peace");
-    st->push("what");
-    st->push("remember");
-    st->push("and");
-    st->push("haste");
-    st->push("and");
-    st->push("noise");
-    st->push("the");
-    st->push("amid");
-    st->push("placidly");
-    st->push("Go");
+    LL* list = new LL();
+    list->add("friend");
+    list->add("old");
+    list->add("my");
+    list->add("darkness");
+    list->add("Hello");
     
-    while (!st->empty()) {
-        printf("%s ", st->top()->val);
-        st->pop();
+    while (!list->empty()) {
+        printf("%s ", list->front()->val);
+        list->remove();
     }
     printf("\n");
     return 0;
