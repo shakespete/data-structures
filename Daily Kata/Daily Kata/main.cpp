@@ -1,104 +1,91 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class TrieNode {
-public:
-    TrieNode();
-    int key;
-    bool isDel;
-    bool isEnd;
-    TrieNode** children;
+struct Node {
+    int val;
 };
-TrieNode::TrieNode() {
-    key = -1;
-    isDel = false;
-    isEnd = false;
-    children = new TrieNode*[26];
-    
-    for (int i = 0; i < 26; ++i) {
-        children[i] = NULL;
-    }
-}
 
-class Trie {
+class Heap {
+    enum { DEF_CAP = 100 };
 public:
-    Trie();
-    void insert(const char* e, const int k);
-    int find(const char* e);
-    void remove(const char* e);
+    Heap(int cap = DEF_CAP);
+    ~Heap();
+    int size() const;
+    bool empty() const;
+    Node* root() const;
+    void push(const int e);
+    void pop();
 private:
-    TrieNode* root;
+    Node** H;
+    int n;
+    int capacity;
 };
 
-
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(const char* e, const int k) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    
-    while (e[ctr] != '\0') {
-        idx = e[ctr] - 'a';
+Heap::Heap(int cap) : H(new Node*[cap]), n(0), capacity(cap) { }
+Heap::~Heap() { while (!empty()) pop(); }
+int Heap::size() const { return n; }
+bool Heap::empty() const { return n == 0;}
+Node* Heap::root() const { return empty() ? NULL : H[1]; }
+void Heap::push(const int e) {
+    if (size() != capacity) {
+        Node* v = new Node;
+        v->val = e;
+        ++n;
+        H[n] = v;
         
-        if (crawler->children[idx] == NULL)
-            crawler->children[idx] = new TrieNode();
-        
-        crawler = crawler->children[idx];
-        ++ctr;
+        int current = n;
+        while (current > 1 && H[current]->val < H[current / 2]->val) {
+            int parent = current / 2;
+            
+            Node* temp = H[parent];
+            H[parent] = H[current];
+            H[current] = temp;
+            current = parent;
+        }
     }
-    
-    crawler->key = k;
-    crawler->isEnd = true;
 }
-int Trie::find(const char* e) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    
-    while (e[ctr] != '\0') {
-        idx = e[ctr] - 'a';
+void Heap::pop() {
+    if (!empty()) {
+        delete H[1];
+        H[1] = H[n];
+        --n;
         
-        if (crawler->children[idx] == NULL) return -1;
-        
-        crawler = crawler->children[idx];
-        ++ctr;
+        int current = 1;
+        while (current * 2 <= n) {
+            int child;
+            int left = current * 2;
+            int right = current * 2 + 1;
+            
+            if (left == n) child = left;
+            else child = H[left]->val < H[right]->val ? left : right;
+            
+            if (H[child]->val > H[current]->val) break;
+            
+            Node* temp = H[child];
+            H[child] = H[current];
+            H[current] = temp;
+            current = child;
+        }
     }
-    
-    if (crawler->isEnd) return crawler->key;
-    return -1;
-}
-void Trie::remove(const char* e) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    
-    while (e[ctr] != '\0') {
-        idx = e[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL) return;
-        
-        crawler = crawler->children[idx];
-        ++ctr;
-    }
-    
-    if (crawler->isEnd) crawler->isDel = true;
-    return;
 }
 
-int uniqId = 0;
 int main() {
-    Trie* t = new Trie();
-    t->insert("sing", ++uniqId);
-    t->insert("sip", ++uniqId);
-    t->insert("ask", ++uniqId);
-
-    printf("%d\n", t->find("sing"));
-    printf("%d\n", t->find("sip"));
-    printf("%d\n", t->find("ask"));
-    printf("%d\n", t->find("sin"));
-    printf("%d\n", t->find("as"));
+    Heap* hp = new Heap();
+    hp->push(4);
+    hp->push(2);
+    hp->push(5);
+    hp->push(0);
+    hp->push(7);
+    hp->push(6);
+    hp->push(1);
+    hp->push(9);
+    hp->push(3);
+    hp->push(8);
+    
+    while (!hp->empty()) {
+        printf("%d ", hp->root()->val);
+        hp->pop();
+    }
+    printf("\n");
     return 0;
 }
