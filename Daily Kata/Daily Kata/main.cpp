@@ -1,58 +1,78 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class Node {
-public:
-    int val;
+struct Node {
+    const char* val;
+    Node* prev;
     Node* next;
 };
 
-class LL {
+class DLL {
 public:
-    LL();
-    ~LL();
+    DLL();
+    ~DLL();
     bool empty() const;
     Node* front() const;
-    void add(const int& e);
-    void remove();
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
     Node* head;
+    Node* tail;
 };
 
-LL::LL() : head(NULL) {}
-LL::~LL() { while (!empty()) remove(); }
-bool LL::empty() const { return head == NULL; }
-Node* LL::front() const { return empty() ? NULL : head; }
-void LL::add(const int& e) {
-    Node* v = new Node;
-    v->val = e;
-    v->next = head;
-    head = v;
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->val = NULL;
+    tail->val = NULL;
+    head->next = tail;
+    tail->prev = head;
 }
-void LL::remove() {
-    if (!empty()) {
-        Node* old = head;
-        head = old->next;
-        delete old;
-    }
+DLL::~DLL() {
+    while (!empty()) removeFront();
+    delete head;
+    delete tail;
 }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
+    Node* u = v->prev;
+    Node* w = v->next;
+    u->next = w;
+    w->prev = u;
+    delete v;
+}
+void DLL::removeFront() { remove(head->next); }
+void DLL::removeBack() { remove(tail->prev); }
 
 int main() {
-    LL* list = new LL();
-    list->add(9);
-    list->add(8);
-    list->add(7);
-    list->add(6);
-    list->add(5);
-    list->add(4);
-    list->add(3);
-    list->add(2);
-    list->add(1);
-    list->add(0);
+    DLL* dList = new DLL();
+    dList->addBack("Hello");
+    dList->addBack("darkness");
+    dList->addBack("my");
+    dList->addBack("old");
+    dList->addBack("friend");
     
-    while (!list->empty()) {
-        printf("%d ", list->front()->val);
-        list->remove();
+    Node* node = dList->front();
+    while (node->val) {
+        printf("%s ", node->val);
+        node = node->next;
     }
     printf("\nFIN\n");
     
