@@ -1,96 +1,54 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class TrieNode {
-public:
-    TrieNode();
-    int key;
-    bool isEnd;
-    bool isDel;
-    TrieNode** children;
+struct Node {
+    const char* val;
+    Node* next;
 };
-TrieNode::TrieNode() {
-    key = 0;
-    isEnd = false;
-    isDel = false;
-    children = new TrieNode*[26];
-    for (int i = 0; i < 26; ++i) {
-        children[i] = NULL;
+
+class LinkedList {
+public:
+    LinkedList();
+    ~LinkedList();
+    bool empty() const;
+    Node* front() const;
+    void add(const char* e);
+    void remove();
+private:
+    Node* head;
+};
+
+LinkedList::LinkedList() : head(NULL) {}
+LinkedList::~LinkedList() { while (!empty()) remove(); }
+bool LinkedList::empty() const { return head == NULL; }
+Node* LinkedList::front() const { return empty() ? NULL : head; }
+void LinkedList::add(const char* e) {
+    Node* v = new Node;
+    v->val = e;
+    v->next = head;
+    head = v;
+}
+void LinkedList::remove() {
+    if (!empty()) {
+        Node* old = head;
+        head = old->next;
+        delete old;
     }
 }
 
-class Trie {
-public:
-    Trie();
-    void insert(const char* str, int k);
-    int find(const char* str);
-    void remove(const char* str);
-    TrieNode* root;
-};
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(const char* str, int k) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    while(str[ctr] != '\0') {
-        idx = str[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL)
-            crawler->children[idx] = new TrieNode();
-    
-        crawler = crawler->children[idx];
-        ctr++;
-    }
-    crawler->isEnd = true;
-    crawler->key = k;
-}
-int Trie::find(const char* str) {
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    while(str[ctr] != '\0') {
-        idx = str[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL) return -1;
-    
-        crawler = crawler->children[idx];
-        ctr++;
-    }
-    
-    if (crawler->isEnd) return crawler->key;
-    return -1;
-}
-void Trie::remove(const char* str){
-    TrieNode* crawler = root;
-    
-    int ctr = 0;
-    int idx;
-    while(str[ctr] != '\0') {
-        idx = str[ctr] - 'a';
-        
-        if (crawler->children[idx] == NULL) return;
-    
-        crawler = crawler->children[idx];
-        ctr++;
-    }
-    
-    if (crawler->isEnd) crawler->isDel = true;
-    return;
-}
-
-int uniqId = 0;
 int main() {
-    Trie* t = new Trie();
-    t->insert("sing", ++uniqId);
-    t->insert("sip", ++uniqId);
-    t->insert("ask", ++uniqId);
-
-    printf("%d\n", t->find("sing"));
-    printf("%d\n", t->find("sip"));
-    printf("%d\n", t->find("ask"));
-    printf("%d\n", t->find("sin"));
-    printf("%d\n", t->find("as"));
+    LinkedList* LL = new LinkedList();
+    LL->add("friend");
+    LL->add("old");
+    LL->add("my");
+    LL->add("darkness");
+    LL->add("Hello");
+    
+    while (!LL->empty()) {
+        printf("%s ", LL->front()->val);
+        LL->remove();
+    }
+    printf("\nFIN\n");
+    
     return 0;
 }
