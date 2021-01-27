@@ -7,6 +7,15 @@ struct Node {
     Node* next;
 };
 
+bool is_equal(const char* a, const char* b) {
+    while (*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
+    }
+    return false;
+}
+
 class DLL {
 public:
     DLL();
@@ -60,23 +69,68 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { remove(head->next); }
 void DLL::removeBack() {remove(tail->prev); }
 
-int main() {
-    DLL* dList = new DLL();
-    dList->addBack("Do");
-    dList->addBack("not");
-    dList->addBack("go");
-    dList->addBack("gentle");
-    dList->addBack("into");
-    dList->addBack("that");
-    dList->addBack("good");
-    dList->addBack("night");
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(const char* e);
+    void insert(const char* e);
+    void remove(const char* e);
+    Node* retrieve(const char* e);
+private:
+    DLL* HM;
+    int capacity;
+};
 
-    Node* node = dList->front();
-    while (node->val) {
-        printf("%s ", node->val);
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(const char* e) {
+    int hash = 31;
+    int c;
+    while (c = *e++) {
+        hash = (((hash << 5) + hash) + c) % capacity;
+    }
+    return hash % capacity;
+}
+void HashMap::insert(const char* e) {
+    int hashVal = hash(e);
+    HM[hashVal].addBack(e);
+}
+void HashMap::remove(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = this->retrieve(e);
+    if (node != NULL) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return NULL;
+    
+    Node* node = HM[hashVal].front();
+    while (node->val != NULL) {
+        if (is_equal(e, node->val)) return node;
         node = node->next;
     }
-    printf("\nFIN\n");
+    return NULL;
+}
+
+int main() {
+    HashMap* hm = new HashMap();
+    hm->insert("Hello");
+    hm->insert("friend");
+    hm->insert("old");
+    hm->insert("darkness");
+    hm->insert("my");
+    
+    printf("%s ", hm->retrieve("Hello")->val);
+    printf("%s ", hm->retrieve("darkness")->val);
+    printf("%s ", hm->retrieve("my")->val);
+    printf("%s ", hm->retrieve("old")->val);
+    printf("%s ", hm->retrieve("friend")->val);
+    
+    hm->remove("Hello");
+    if (hm->retrieve("Hello") == NULL) printf("\nFIN\n");
 
     return 0;
 }
