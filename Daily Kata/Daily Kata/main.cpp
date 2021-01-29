@@ -1,12 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-    const char* val;
-    Node* prev;
-    Node* next;
-};
-
 bool is_equal(const char* a, const char* b) {
     while (*a == *b) {
         if (*a == '\0') return true;
@@ -16,121 +10,70 @@ bool is_equal(const char* a, const char* b) {
     return false;
 }
 
-class DLL {
+struct Node {
+    const char* val;
+};
+
+class DArray {
+    enum { DEF_CAP = 2 };
 public:
-    DLL();
-    ~DLL();
+    DArray(int cap = DEF_CAP);
+    ~DArray();
+    int size() const;
     bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, const char* e);
-    void addFront(const char* e);
-    void addBack(const char* e);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
+    int find(const char* e);
+    void push(const char* e);
+    const char* pop();
 private:
-    Node* head;
-    Node* tail;
-};
-
-DLL::DLL() {
-    head = new Node;
-    tail = new Node;
-    head->val = NULL;
-    tail->val = NULL;
-    head->next = tail;
-    tail->prev = head;
-}
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? NULL : head->next; }
-Node* DLL::back() const { return empty() ? NULL : tail->prev; }
-void DLL::add(Node* v, const char* e) {
-    Node* u = new Node;
-    u->val = e;
-    u->prev = v->prev;
-    u->next = v;
-    v->prev->next = u;
-    v->prev = u;
-    
-}
-void DLL::addFront(const char* e) { add(head->next, e); }
-void DLL::addBack(const char* e) { add(tail, e); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
-    }
-}
-void DLL::removeFront() { remove(head->next); }
-void DLL::removeBack() {remove(tail->prev); }
-
-class HashMap {
-    enum { DEF_CAP = 100 };
-public:
-    HashMap(int cap = DEF_CAP);
-    int hash(const char* e);
-    void insert(const char* e);
-    void remove(const char* e);
-    Node* retrieve(const char* e);
-private:
-    DLL* HM;
+    Node** A;
     int capacity;
+    int n;
 };
+DArray::DArray(int cap) : A(new Node*[cap]), capacity(cap), n(0) {}
+DArray::~DArray() { while (!empty()) pop(); }
+int DArray::size() const { return n; }
+bool DArray::empty() const { return n == 0; }
+int DArray::find(const char* e) {
+    if (empty()) return -1;
+    
+    for (int i = 0; i < n; ++i)
+        if (is_equal(e, A[i]->val))
+            return i;
+    return -1;
+}
+void DArray::push(const char* e) {
+    if (size() == capacity) {
+        Node** B = new Node*[capacity * 2];
+        for (int i = 0; i < capacity; ++i) B[i] = A[i];
+        A = B;
+        capacity *= 2;
+    }
+    Node* v = new Node;
+    v->val = e;
+    A[n++] = v;
+}
+const char* DArray::pop() {
+    Node* v = A[--n];
+    return v->val;
+}
 
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(const char* e) {
-    int hash = 31;
-    int c;
-    while (c = *e++) {
-        hash = (((hash << 5) + hash) + c) % capacity;
-    }
-    return hash % capacity;
-}
-void HashMap::insert(const char* e) {
-    int hashVal = hash(e);
-    HM[hashVal].addBack(e);
-}
-void HashMap::remove(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return;
-    
-    Node* node = this->retrieve(e);
-    if (node != NULL) HM[hashVal].remove(node);
-    return;
-}
-Node* HashMap::retrieve(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return NULL;
-    
-    Node* node = HM[hashVal].front();
-    while (node->val != NULL) {
-        if (is_equal(e, node->val)) return node;
-        node = node->next;
-    }
-    return NULL;
-}
 
 int main() {
-    HashMap* hm = new HashMap();
-    hm->insert("Hello");
-    hm->insert("friend");
-    hm->insert("old");
-    hm->insert("darkness");
-    hm->insert("my");
+    DArray* arr = new DArray();
+    arr->push("friend");
+    arr->push("old");
+    arr->push("my");
+    arr->push("darkness");
+    arr->push("Hello");
     
-    printf("%s ", hm->retrieve("Hello")->val);
-    printf("%s ", hm->retrieve("darkness")->val);
-    printf("%s ", hm->retrieve("my")->val);
-    printf("%s ", hm->retrieve("old")->val);
-    printf("%s ", hm->retrieve("friend")->val);
+    printf("%d\n", arr->find("old"));
+    printf("%d\n", arr->find("darkness"));
+    printf("%d\n", arr->find("ununravelable"));
     
-    hm->remove("Hello");
-    if (hm->retrieve("Hello") == NULL) printf("\nFIN\n");
-
+    while (!arr->empty()) {
+        printf("%s ", arr->pop());
+    }
+    
+    printf("\nFIN\n");
     return 0;
 }
