@@ -46,21 +46,48 @@ void CLL::remove() {
     }
 }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(const char* e);
+    void deq();
+private:
+    CLL CL;
+    int n;
+};
+
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return  empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+    CL.add(e);
+    CL.advance();
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        CL.remove();
+        --n;
+    }
+}
+
 int main() {
-    CLL* clist = new CLL();
-    clist->add("old");
-    clist->add("my");
-    clist->add("darkness");
-    clist->add("Hello");
-    clist->add("friend");
+    Queue* q = new Queue();
+    q->enq("Hello");
+    q->enq("darkness");
+    q->enq("my");
+    q->enq("old");
+    q->enq("friend");
 
-    clist->advance();
-
-    Node* node = clist->front();
-    while (node) {
-        printf("%s ", node->val);
-        clist->remove();
-        node = clist->front();
+    while (!q->empty()) {
+        printf("%s ", q->front()->val);
+        q->deq();
     }
     printf("\nFIN\n");
 
