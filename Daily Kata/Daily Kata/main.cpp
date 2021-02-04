@@ -1,53 +1,80 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
+bool is_equal(const char* a, const char* b) {
+    while (*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
+    }
+    return false;
+}
+
 struct Node {
     const char* val;
-    Node* next;
 };
 
-class LL {
+class DArray {
+    enum { DEF_CAP = 2 };
 public:
-    LL();
-    ~LL();
+    DArray(int cap = DEF_CAP);
+    int size() const;
     bool empty() const;
-    Node* front() const;
-    void add(const char* e);
-    void remove();
+    int find(const char* e);
+    void push(const char* e);
+    const char* pop();
 private:
-    Node* head;
+    Node** A;
+    int capacity;
+    int n;
 };
 
-LL::LL() : head(NULL) {}
-LL::~LL() { while (!empty()) remove(); }
-bool LL::empty() const { return head == NULL; }
-Node* LL::front() const { return empty() ? NULL : head; }
-void LL::add(const char* e) {
+DArray::DArray(int cap) : A(new Node*[cap]), capacity(cap), n(0) { }
+int DArray::size() const { return n; }
+bool DArray::empty() const { return n == 0; }
+int DArray::find(const char* e) {
+    if (empty()) return -1;
+    for (int i = 0; i < n; ++i) {
+        if (is_equal(e, A[i]->val)) return i;
+    }
+    return -1;
+}
+void DArray::push(const char* e) {
+    if (size() == capacity) {
+        Node** B = new Node*[capacity * 2];
+        for (int i = 0; i < capacity; ++i) B[i] = A[i];
+        A = B;
+        capacity *= 2;
+    }
     Node* v = new Node;
     v->val = e;
-    v->next = head;
-    head = v;
+    A[n++] = v;
 }
-void LL::remove() {
+const char* DArray::pop() {
     if (!empty()) {
-        Node* old = head;
-        head = old->next;
-        delete old;
+        Node* v = A[--n];
+        return v->val;
     }
+    return "NULL";
 }
 
+
 int main() {
-    LL* list = new LL();
-    list->add("friend");
-    list->add("old");
-    list->add("my");
-    list->add("darkness");
-    list->add("Hello");
+    DArray* arr = new DArray();
+    arr->push("friend");
+    arr->push("old");
+    arr->push("my");
+    arr->push("darkness");
+    arr->push("Hello");
     
-    while (!list->empty()) {
-        printf("%s ", list->front()->val);
-        list->remove();
+    printf("%d\n", arr->find("old"));
+    printf("%d\n", arr->find("darkness"));
+    
+    while (!arr->empty()) {
+        printf("%s ", arr->pop());
     }
+    
     printf("\nFIN\n");
+    
     return 0;
 }
