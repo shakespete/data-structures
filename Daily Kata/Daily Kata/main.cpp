@@ -1,79 +1,61 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-bool is_equal(const char* a, const char* b) {
-    while (*a == *b) {
-        if (*a == '\0') return true;
-        ++a;
-        ++b;
-    }
-    return false;
-}
-
 struct Node {
     const char* val;
 };
 
-class DArray {
+class Stack {
     enum { DEF_CAP = 2 };
 public:
-    DArray(int cap = DEF_CAP);
+    Stack(int cap = DEF_CAP);
+    ~Stack();
     int size() const;
     bool empty() const;
-    int find(const char* e);
+    Node* top() const;
     void push(const char* e);
-    const char* pop();
+    void pop();
 private:
-    Node** A;
+    Node** S;
+    int t;
     int capacity;
-    int n;
 };
 
-DArray::DArray(int cap) : A(new Node*[cap]), capacity(cap), n(0) { }
-int DArray::size() const { return n; }
-bool DArray::empty() const { return n == 0; }
-int DArray::find(const char* e) {
-    if (empty()) return -1;
-    for (int i = 0; i < n; ++i) {
-        if (is_equal(e, A[i]->val)) return i;
-    }
-    return -1;
-}
-void DArray::push(const char* e) {
+Stack::Stack(int cap) : S(new Node*[cap]), capacity(cap), t(-1) { };
+Stack::~Stack() { while (!empty()) pop(); }
+int Stack::size() const { return t + 1; }
+bool Stack::empty() const { return size() == 0; }
+Node* Stack::top() const { return empty() ? NULL : S[t]; }
+void Stack::push(const char* e) {
     if (size() == capacity) {
         Node** B = new Node*[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = A[i];
-        A = B;
+        for (int i = 0; i < capacity; ++i) B[i] = S[i];
+        S = B;
         capacity *= 2;
     }
     Node* v = new Node;
     v->val = e;
-    A[n++] = v;
+    S[++t] = v;
 }
-const char* DArray::pop() {
+void Stack::pop() {
     if (!empty()) {
-        Node* v = A[--n];
-        return v->val;
+        delete S[t];
+        --t;
     }
-    return "NULL";
 }
-
 
 int main() {
-    DArray* arr = new DArray();
-    arr->push("friend");
-    arr->push("old");
-    arr->push("my");
-    arr->push("darkness");
-    arr->push("Hello");
+    Stack* st = new Stack();
+    st->push("friend");
+    st->push("old");
+    st->push("my");
+    st->push("darkness");
+    st->push("Hello");
     
-    printf("%d\n", arr->find("old"));
-    printf("%d\n", arr->find("darkness"));
-    
-    while (!arr->empty()) {
-        printf("%s ", arr->pop());
+    while (!st->empty()) {
+        printf("%s ", st->top()->val);
+        st->pop();
     }
-    
     printf("\nFIN\n");
     
     return 0;
