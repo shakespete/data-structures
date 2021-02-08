@@ -3,60 +3,80 @@
 
 struct Node {
     const char* val;
+    Node* prev;
+    Node* next;
 };
 
-class Stack {
-    enum { DEF_CAP = 2 };
+class DLL {
 public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
+    DLL();
+    ~DLL();
     bool empty() const;
-    Node* top() const;
-    void push(const char* e);
-    void pop();
+    Node* front() const;
+    Node* back() const;
+    void add(const char* e, Node* v);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
-    Node** S;
-    int t;
-    int capacity;
+    Node* head;
+    Node* tail;
 };
 
-Stack::Stack(int cap) : S(new Node*[cap]), capacity(cap), t(-1) { };
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return size() == 0; }
-Node* Stack::top() const { return empty() ? NULL : S[t]; }
-void Stack::push(const char* e) {
-    if (size() == capacity) {
-        Node** B = new Node*[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = S[i];
-        S = B;
-        capacity *= 2;
-    }
-    Node* v = new Node;
-    v->val = e;
-    S[++t] = v;
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->val = NULL;
+    tail->val = NULL;
+    head->next = tail;
+    tail->prev = head;
 }
-void Stack::pop() {
+DLL::~DLL() { while (!empty()) removeBack(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next;}
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(const char* e, Node* v) {
+    Node* u = new Node;
+    u->val = e;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(e, head->next); }
+void DLL::addBack(const char* e) { add(e, tail); }
+void DLL::remove(Node* v) {
     if (!empty()) {
-        delete S[t];
-        --t;
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
 
 int main() {
-    Stack* st = new Stack();
-    st->push("friend");
-    st->push("old");
-    st->push("my");
-    st->push("darkness");
-    st->push("Hello");
+    DLL* DList = new DLL();
+    DList->addBack("A");
+    DList->addBack("stick,");
+    DList->addBack("a");
+    DList->addBack("stone,");
+    DList->addBack("it's");
+    DList->addBack("the");
+    DList->addBack("end");
+    DList->addBack("of");
+    DList->addBack("the");
+    DList->addBack("road");
     
-    while (!st->empty()) {
-        printf("%s ", st->top()->val);
-        st->pop();
+    while (!DList->empty()) {
+        printf("%s ", DList->front()->val);
+        DList->removeFront();
     }
     printf("\nFIN\n");
-    
     return 0;
 }
