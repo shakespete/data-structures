@@ -1,160 +1,98 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-    const char* val;
-    Node* prev;
-    Node* next;
+
+class TrieNode {
+public:
+    TrieNode();
+    int key;
+    bool isEnd;
+    bool isDel;
+    TrieNode** children;
 };
 
-class DLL {
-public:
-    DLL();
-    ~DLL();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(const char* e, Node* v);
-    void addFront(const char* e);
-    void addBack(const char* e);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
-private:
-    Node* head;
-    Node* tail;
-};
-
-DLL::DLL() {
-    head = new Node;
-    tail = new Node;
-    head->val = NULL;
-    tail->val = NULL;
-    head->next = tail;
-    tail->prev = head;
-}
-DLL::~DLL() { while (!empty()) removeBack(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? NULL : head->next;}
-Node* DLL::back() const { return empty() ? NULL : tail->prev; }
-void DLL::add(const char* e, Node* v) {
-    Node* u = new Node;
-    u->val = e;
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(const char* e) { add(e, head->next); }
-void DLL::addBack(const char* e) { add(e, tail); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
+TrieNode::TrieNode() {
+    key = 0;
+    isEnd = false;
+    isDel = false;
+    
+    children = new TrieNode*[26];
+    for (int i = 0; i <= 26; ++i) {
+        children[i] = NULL;
     }
 }
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-bool is_equal(const char* a, const char* b) {
-    while (*a == *b) {
-        if (*a == '\0') return true;
-        ++a;
-        ++b;
-    }
-    return false;
-}
-
-class HashMap {
-    enum { DEF_CAP = 100 };
+class Trie {
 public:
-    HashMap(int cap = DEF_CAP);
-    int hash(const char* e);
-    void insert(const char* e);
+    Trie();
+    void insert(const char* e, int k);
+    int find(const char* e);
     void remove(const char* e);
-    Node* retrieve(const char* e);
 private:
-    DLL* HM;
-    int capacity;
+    TrieNode* root;
 };
 
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(const char* e) {
-    int hash = 31;
-    int c;
-    while (c = *e++) {
-        hash = (((hash << 5) + hash) + c) % capacity;
-    }
-    return hash % capacity;
-}
-void HashMap::insert(const char* e) {
-    int hashVal = hash(e);
-    HM[hashVal].addBack(e);
-}
-void HashMap::remove(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return;
+Trie::Trie() { root = new TrieNode(); }
+void Trie::insert(const char* e, int k) {
+    TrieNode* crawler = root;
     
-    Node* node = retrieve(e);
-    if (node != NULL) HM[hashVal].remove(node);
+    int ctr = 0;
+    int idx;
+    while (e[ctr] != '\0') {
+        idx = e[ctr] - 'a';
+        if (crawler->children[idx] == NULL)
+            crawler->children[idx] = new TrieNode();
+        
+        crawler = crawler->children[idx];
+        ctr++;
+    }
+    crawler->isEnd = true;
+    crawler->key = k;
+}
+int Trie::find(const char* e) {
+    TrieNode* crawler = root;
+    
+    int ctr = 0;
+    int idx;
+    while (e[ctr] != '\0') {
+        idx = e[ctr] - 'a';
+        if (crawler->children[idx] == NULL) return -1;
+        
+        crawler = crawler->children[idx];
+        ctr++;
+    }
+    if (crawler->isEnd && !crawler->isDel) return crawler->key;
+    return -1;
+}
+void Trie::remove(const char* e) {
+    TrieNode* crawler = root;
+    
+    int ctr = 0;
+    int idx;
+    while (e[ctr] != '\0') {
+        idx = e[ctr] - 'a';
+        if (crawler->children[idx] == NULL) return;
+        
+        crawler = crawler->children[idx];
+        ctr++;
+    }
+    if (crawler->isEnd) crawler->isDel = true;
     return;
-}
-Node* HashMap::retrieve(const char* e) {
-    Node* u = new Node;
-    u->val = "-";
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return u;
-    
-    Node* node = HM[hashVal].front();
-    while (node->val != NULL) {
-        if(is_equal(e, node->val)) return node;
-        node = node->next;
-    }
-    return u;
 }
 
 int main() {
-    HashMap* hm = new HashMap();
-    hm->insert("end");
-    hm->insert("stick,");
-    hm->insert("a");
-    hm->insert("stone,");
-    hm->insert("road");
-    hm->insert("it's");
-    hm->insert("the");
-    hm->insert("A");
-    hm->insert("of");
-    hm->insert("the");
     
-    
-    printf("%s ", hm->retrieve("A")->val);
-    printf("%s ", hm->retrieve("stick,")->val);
-    printf("%s ", hm->retrieve("a")->val);
-    printf("%s ", hm->retrieve("stone,")->val);
-    printf("%s ", hm->retrieve("it's")->val);
-    printf("%s ", hm->retrieve("the")->val);
-    printf("%s ", hm->retrieve("end")->val);
-    printf("%s ", hm->retrieve("of")->val);
-    printf("%s ", hm->retrieve("the")->val);
-    printf("%s\n", hm->retrieve("road")->val);
-    
-    hm->remove("A");
-    hm->remove("stone,");
-    hm->remove("end");
-    hm->remove("road");
-    printf("%s ", hm->retrieve("A")->val);
-    printf("%s ", hm->retrieve("stick,")->val);
-    printf("%s ", hm->retrieve("a")->val);
-    printf("%s ", hm->retrieve("stone,")->val);
-    printf("%s ", hm->retrieve("it's")->val);
-    printf("%s ", hm->retrieve("the")->val);
-    printf("%s ", hm->retrieve("end")->val);
-    printf("%s ", hm->retrieve("of")->val);
-    printf("%s ", hm->retrieve("the")->val);
-    printf("%s ", hm->retrieve("road")->val);
+    int uniqId = 0;
+    Trie* t = new Trie();
+    t->insert("sing", ++uniqId);
+    t->insert("sip", ++uniqId);
+    t->insert("ask", ++uniqId);
+
+    printf("%d\n", t->find("sing"));
+    printf("%d\n", t->find("sip"));
+    printf("%d\n", t->find("ask"));
+    printf("%d\n", t->find("sin"));
+    printf("%d\n", t->find("as"));
     
     printf("\nFIN\n");
     return 0;
