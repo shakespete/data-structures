@@ -38,7 +38,6 @@ void CLL::add(const char* e) {
         v->next = cursor->next;
         cursor->next = v;
     }
-    
 }
 void CLL::remove() {
     if (!empty()) {
@@ -47,20 +46,49 @@ void CLL::remove() {
         else cursor->next = old->next;
         delete old;
     }
-    
+}
+
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(const char* e);
+    void deq();
+private:
+    CLL CL;
+    int n;
+};
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n ==0; }
+Node* Queue::front() const { return empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+    CL.add(e);
+    CL.advance();
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        CL.remove();
+        --n;
+    }
 }
 
 int main () {
-    CLL* CL = new CLL();
-    CL->add("Hello");
-    CL->add("darkness");
-    CL->add("my");
-    CL->add("old");
-    CL->add("friend");
+    Queue* q = new Queue();
+    q->enq("Hello");
+    q->enq("darkness");
+    q->enq("my");
+    q->enq("old");
+    q->enq("friend");
     
-    while (!CL->empty()) {
-        printf("%s ", CL->front()->val);
-        CL->remove();
+    while (!q->empty()) {
+        printf("%s ", q->front()->val);
+        q->deq();
     }
     printf("\nFIN\n");
     return 0;
