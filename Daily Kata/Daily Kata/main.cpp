@@ -1,73 +1,76 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class DStack {
-    enum { DEF_CAP = 2 };
-public:
-    DStack(int cap = DEF_CAP);
-    ~DStack();
-    int size() const;
-    bool empty() const;
-    int find(int e) const;
-    void push(int e);
-    int pop();
-private:
-    int* A;
-    int capacity;
-    int n;
+struct Node {
+    const char* val;
+    Node* prev;
+    Node* next;
 };
 
-DStack::DStack(int cap) : A(new int[cap]), capacity(cap), n(-1) { }
-DStack::~DStack() { while (!empty()) pop(); }
-int DStack::size() const { return n + 1; }
-bool DStack::empty() const { return size() == 0; }
-int DStack::find(int e) const {
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->next = tail;
+    tail->prev = head;
+    head->val = NULL;
+    tail->val = NULL;
+}
+DLL::~DLL() { while (!empty()) removeBack(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev= u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
     if (!empty()) {
-        for (int i = 0; i < capacity; ++i) {
-            if (A[i] == e) return i;
-        }
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
-    return -1;
 }
-void DStack::push(int e) {
-    if (size() == capacity) {
-        int* B = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = A[i];
-        A = B;
-        capacity *= 2;
-    }
-    A[++n] = e;
-}
-int DStack::pop() {
-    if (!empty()) {
-        return A[n--];
-    }
-    return -1;
-}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() {if (!empty()) remove(tail->prev); }
 
 int main() {
-    DStack* ds = new DStack();
-    ds->push(1);
-    ds->push(2);
-    ds->push(3);
-    ds->push(4);
-    ds->push(5);
-    ds->push(6);
-    ds->push(7);
-    ds->push(8);
-    ds->push(9);
-    ds->push(10);
+    DLL* dlist = new DLL();
+    dlist->addBack("Fly");
+    dlist->addBack("me");
+    dlist->addBack("to");
+    dlist->addBack("the");
+    dlist->addBack("moon");
     
-    printf("%d\n", ds->pop());
-    printf("%d\n", ds->pop());
-    printf("%d\n", ds->pop());
-    printf("%d\n", ds->pop());
-    printf("%d\n", ds->pop());
+    while (!dlist->empty()) {
+        printf("%s ", dlist->front()->val);
+        dlist->removeFront();
+    }
+    printf("\nFIN\n");
     
-    printf("%d\n", ds->find(5));
-    printf("%d\n", ds->find(4));
-    printf("%d\n", ds->find(3));
-    
-    printf("%d\n", ds->find(6));
     return 0;
 }
