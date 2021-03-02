@@ -58,18 +58,75 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() {if (!empty()) remove(tail->prev); }
 
-int main() {
-    DLL* dlist = new DLL();
-    dlist->addBack("Fly");
-    dlist->addBack("me");
-    dlist->addBack("to");
-    dlist->addBack("the");
-    dlist->addBack("moon");
-    
-    while (!dlist->empty()) {
-        printf("%s ", dlist->front()->val);
-        dlist->removeFront();
+bool is_equal(const char* a, const char* b) {
+    while (*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
     }
+    return false;
+}
+
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(const char* e);
+    void insert(const char* e);
+    void remove(const char* e);
+    Node* retrieve(const char* e);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(const char* e) {
+    int hash = 31;
+    int c;
+    while (c = *e++) {
+        hash = (((hash << 5) + hash) + c) % capacity;
+    }
+    return hash % capacity;
+}
+void HashMap::insert(const char* e) {
+    int hashVal = hash(e);
+    HM[hashVal].addBack(e);
+}
+void HashMap::remove(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = HM[hashVal].front();
+    if (node != NULL) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return NULL;
+    
+    Node* node = HM[hashVal].front();
+    while (node->val != NULL) {
+        if (is_equal(e, node->val)) return node;
+        node = node->next;
+    }
+    return NULL;
+}
+
+int main() {
+    HashMap* hm = new HashMap();
+    hm->insert("Fly");
+    hm->insert("me");
+    hm->insert("to");
+    hm->insert("the");
+    hm->insert("moon");
+    
+    printf("%s ", hm->retrieve("Fly")->val);
+    printf("%s ", hm->retrieve("me")->val);
+    printf("%s ", hm->retrieve("to")->val);
+    printf("%s ", hm->retrieve("the")->val);
+    printf("%s ", hm->retrieve("moon")->val);
+    
     printf("\nFIN\n");
     
     return 0;
