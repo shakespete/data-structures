@@ -6,48 +6,60 @@ struct Node {
     Node* next;
 };
 
-class LinkedList {
+class CLL {
 public:
-    LinkedList();
-    ~LinkedList();
+    CLL();
+    ~CLL();
     bool empty() const;
     Node* front() const;
+    Node* back() const;
     void add(const char* e);
+    void advance();
     void remove();
 private:
-    Node* head;
+    Node* cursor;
 };
 
-LinkedList::LinkedList() : head(NULL) { }
-LinkedList::~LinkedList() { while (!empty()) remove(); }
-bool LinkedList::empty() const { return head == NULL; }
-Node* LinkedList::front() const { return empty() ? NULL : head; }
-void LinkedList::add(const char* e) {
+CLL::CLL() : cursor(NULL) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node* CLL::front() const { return empty() ? NULL : cursor->next; }
+Node* CLL::back() const { return empty() ? NULL : cursor;}
+void CLL::add(const char* e) {
     Node* v = new Node;
     v->val = e;
-    v->next = head;
-    head = v;
+    if (empty()) {
+        v->next = v;
+        cursor = v;
+    } else {
+        v->next = cursor->next;
+        cursor->next = v;
+    }
 }
-void LinkedList::remove() {
+void CLL::advance() {
+    if (!empty()) cursor = cursor->next;
+}
+void CLL::remove() {
     if (!empty()) {
-        Node* old = head;
-        head = old->next;
+        Node* old = cursor->next;
+        if (cursor == old) cursor = NULL;
+        else cursor->next = old->next;
         delete old;
     }
 }
 
-
-
 int main() {
-    LinkedList* ll = new LinkedList();
-    ll->add("it's a gun");
-    ll->add("it's a trap");
-    ll->add("it is death");
-    ll->add("It is night");
-    while (!ll->empty()) {
-        printf("%s ", ll->front()->val);
-        ll->remove();
-    };
+    CLL* clist = new CLL();
+    clist->add("in the brush");
+    clist->add("a fox");
+    clist->add("when it blooms,");
+    clist->add("The oak");
+    Node* node = clist->front();
+    while (!clist->empty()) {
+        printf("%s ", node->val);
+        node = node->next;
+        clist->remove();
+    }
     printf("\nFIN\n");
     return 0;
 }
