@@ -48,17 +48,49 @@ void CLL::remove() {
     }
 }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(const char* e);
+    void deq();
+private:
+    CLL CL;
+    int n;
+};
+
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+    CL.add(e);
+    CL.advance();
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        CL.remove();
+        --n;
+    }
+    
+}
+
+
 int main() {
-    CLL* clist = new CLL();
-    clist->add("in the brush");
-    clist->add("a fox");
-    clist->add("when it blooms,");
-    clist->add("The oak");
-    Node* node = clist->front();
-    while (!clist->empty()) {
-        printf("%s ", node->val);
-        node = node->next;
-        clist->remove();
+    Queue* q = new Queue();
+    q->enq(" The nod");
+    q->enq("of the wood,");
+    q->enq("the song");
+    q->enq("of a thrush");
+    
+    while (!q->empty()) {
+        printf("%s ", q->front()->val);
+        q->deq();
     }
     printf("\nFIN\n");
     return 0;
