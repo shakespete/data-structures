@@ -1,96 +1,56 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-    const char* val;
-    Node* next;
-};
-
-class CLL {
+class DStack {
+    enum { DEF_CAP = 2 };
 public:
-    CLL();
-    ~CLL();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(const char* e);
-    void advance();
-    void remove();
-private:
-    Node* cursor;
-};
-
-CLL::CLL() : cursor(NULL) { }
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == NULL; }
-Node* CLL::front() const { return empty() ? NULL : cursor->next; }
-Node* CLL::back() const { return empty() ? NULL : cursor;}
-void CLL::add(const char* e) {
-    Node* v = new Node;
-    v->val = e;
-    if (empty()) {
-        v->next = v;
-        cursor = v;
-    } else {
-        v->next = cursor->next;
-        cursor->next = v;
-    }
-}
-void CLL::advance() {
-    if (!empty()) cursor = cursor->next;
-}
-void CLL::remove() {
-    if (!empty()) {
-        Node* old = cursor->next;
-        if (cursor == old) cursor = NULL;
-        else cursor->next = old->next;
-        delete old;
-    }
-}
-
-class Queue {
-public:
-    Queue();
-    ~Queue();
+    DStack(int cap = DEF_CAP);
+    ~DStack();
     int size() const;
     bool empty() const;
-    Node* front() const;
-    void enq(const char* e);
-    void deq();
+    int top() const;
+    void push(int e);
+    int pop();
 private:
-    CLL CL;
-    int n;
+    int* S;
+    int t;
+    int capacity;
 };
 
-Queue::Queue() : CL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? NULL : CL.front(); }
-void Queue::enq(const char* e) {
-    CL.add(e);
-    CL.advance();
-    ++n;
-}
-void Queue::deq() {
-    if (!empty()) {
-        CL.remove();
-        --n;
+DStack::DStack(int cap) : S(new int[cap]), capacity(cap), t(-1) {};
+DStack::~DStack() { while (!empty()) pop(); }
+int DStack::size() const { return t + 1; }
+bool DStack::empty() const { return size() == 0; }
+int DStack::top() const { return empty() ? -1 : S[t];}
+void DStack::push(int e) {
+    if (size() == capacity) {
+        int* B = new int[capacity * 2];
+        for (int i = 0; i < capacity; ++i) B[i] = S[i];
+        S = B;
     }
-    
+    S[++t] = e;
 }
-
+int DStack::pop() {
+    if (!empty()) {
+        return S[t--];
+    }
+    return -1;
+}
 
 int main() {
-    Queue* q = new Queue();
-    q->enq(" The nod");
-    q->enq("of the wood,");
-    q->enq("the song");
-    q->enq("of a thrush");
+    DStack* ds = new DStack();
+    ds->push(9);
+    ds->push(8);
+    ds->push(7);
+    ds->push(6);
+    ds->push(5);
+    ds->push(4);
+    ds->push(3);
+    ds->push(2);
+    ds->push(1);
     
-    while (!q->empty()) {
-        printf("%s ", q->front()->val);
-        q->deq();
+    while (!ds->empty()) {
+        printf("%d ", ds->pop());
     }
     printf("\nFIN\n");
     return 0;
