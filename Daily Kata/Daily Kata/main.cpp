@@ -1,56 +1,78 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class DStack {
-    enum { DEF_CAP = 2 };
-public:
-    DStack(int cap = DEF_CAP);
-    ~DStack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(int e);
-    int pop();
-private:
-    int* S;
-    int t;
-    int capacity;
+struct Node {
+    const char* val;
+    Node* prev;
+    Node* next;
 };
 
-DStack::DStack(int cap) : S(new int[cap]), capacity(cap), t(-1) {};
-DStack::~DStack() { while (!empty()) pop(); }
-int DStack::size() const { return t + 1; }
-bool DStack::empty() const { return size() == 0; }
-int DStack::top() const { return empty() ? -1 : S[t];}
-void DStack::push(int e) {
-    if (size() == capacity) {
-        int* B = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = S[i];
-        S = B;
-    }
-    S[++t] = e;
-}
-int DStack::pop() {
-    if (!empty()) {
-        return S[t--];
-    }
-    return -1;
-}
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
 
-int main() {
-    DStack* ds = new DStack();
-    ds->push(9);
-    ds->push(8);
-    ds->push(7);
-    ds->push(6);
-    ds->push(5);
-    ds->push(4);
-    ds->push(3);
-    ds->push(2);
-    ds->push(1);
-    
-    while (!ds->empty()) {
-        printf("%d ", ds->pop());
+
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->next = tail;
+    tail->prev = head;
+    head->val = NULL;
+    tail->val = NULL;
+}
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
+    }
+}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
+int main () {
+    DLL* dl = new DLL();
+      
+    dl->addBack("The wood");
+    dl->addBack("of the wing,");
+    dl->addBack("a cliff,");
+    dl->addBack("a fall.");
+    dl->addBack("A scratch,");
+    dl->addBack("a lump,");
+    dl->addBack("it is nothing at all");
+    while (!dl->empty()) {
+        printf("%s ", dl->front()->val);
+        dl->removeFront();
     }
     printf("\nFIN\n");
     return 0;
