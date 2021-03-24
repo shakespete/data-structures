@@ -25,7 +25,6 @@ private:
     Node* tail;
 };
 
-
 DLL::DLL() {
     head = new Node;
     tail = new Node;
@@ -60,20 +59,82 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-int main () {
-    DLL* dl = new DLL();
-      
-    dl->addBack("The wood");
-    dl->addBack("of the wing,");
-    dl->addBack("a cliff,");
-    dl->addBack("a fall.");
-    dl->addBack("A scratch,");
-    dl->addBack("a lump,");
-    dl->addBack("it is nothing at all");
-    while (!dl->empty()) {
-        printf("%s ", dl->front()->val);
-        dl->removeFront();
+bool is_equal(const char* a, const char* b) {
+    while(*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
     }
+    return false;
+}
+
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(const char* e);
+    void insert(const char* e);
+    void remove(const char* e);
+    Node* retrieve(const char* e);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(const char* e) {
+    int hash = 31;
+    int c;
+    while (c = *e++) {
+        hash = (((hash << 5) + hash) + c) % capacity;
+    }
+    return hash % capacity;
+}
+void HashMap::insert(const char* e) {
+    int hashVal = hash(e);
+    HM[hashVal].addBack(e);
+}
+void HashMap::remove(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(e);
+    if (node != NULL) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return NULL;
+    
+    Node* node = HM[hashVal].front();
+    while (node->val != NULL) {
+        if (is_equal(e, node->val)) return node;
+        node = node->next;
+    };
+    return NULL;
+}
+
+int main () {
+    HashMap* hm = new HashMap();
+      
+    hm->insert("The wood");
+    hm->insert("of the wing,");
+    hm->insert("a cliff,");
+    hm->insert("a fall.");
+    hm->insert("A scratch,");
+    hm->insert("a lump,");
+    hm->insert("it is nothing at all");
+    
+    printf("%s ", hm->retrieve("The wood")->val);
+    printf("%s ", hm->retrieve("of the wing,")->val);
+    printf("%s ", hm->retrieve("a cliff,")->val);
+    printf("%s ", hm->retrieve("a fall.")->val);
+    printf("%s ", hm->retrieve("A scratch,")->val);
+    printf("%s ", hm->retrieve("a lump,")->val);
+    printf("%s ", hm->retrieve("it is nothing at all")->val);
+    
+    
+    
     printf("\nFIN\n");
     return 0;
 }
