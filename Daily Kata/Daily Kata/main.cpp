@@ -4,49 +4,72 @@
 struct Node {
     const char* val;
     Node* next;
+    Node* prev;
 };
 
-class LL {
+class DLL {
 public:
-    LL();
-    ~LL();
+    DLL();
+    ~DLL();
     bool empty() const;
     Node* front() const;
-    void add(const char* e);
-    void remove();
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
-    Node* cursor;
+    Node* head;
+    Node* tail;
 };
 
-LL::LL() : cursor(NULL) { };
-LL::~LL() { while (!empty()) remove(); }
-bool LL::empty() const { return cursor == NULL; }
-Node* LL::front() const { return empty() ? NULL : cursor; }
-void LL::add(const char* e) {
-    Node* v = new Node;
-    v->val = e;
-    v->next = cursor;
-    cursor = v;
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->next = tail;
+    tail->prev = head;
+    head->val = NULL;
+    tail->val = NULL;
 }
-void LL::remove() {
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
     if (!empty()) {
-        Node* old = cursor;
-        cursor = cursor->next;
-        delete old;
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack()  { if (!empty()) remove(tail->prev); }
 
 int main() {
-    LL* list = new LL();
-    list->add("the bone");
-    list->add("and");
-    list->add("the flesh");
-    list->add("the ground,");
-    list->add("The foot,");
+    DLL* dlist = new DLL();
     
-    while (!list->empty()) {
-        printf("%s ", list->front()->val);
-        list->remove();
+    dlist->addBack("A mile,");
+    dlist->addBack("a must,");
+    dlist->addBack("a thrust,");
+    dlist->addBack("a bump");
+    
+    while(!dlist->empty()) {
+        printf("%s ", dlist->front()->val);
+        dlist->removeFront();
     }
     printf("\nFIN\n");
     
