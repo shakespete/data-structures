@@ -59,18 +59,76 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack()  { if (!empty()) remove(tail->prev); }
 
-int main() {
-    DLL* dlist = new DLL();
-    
-    dlist->addBack("A mile,");
-    dlist->addBack("a must,");
-    dlist->addBack("a thrust,");
-    dlist->addBack("a bump");
-    
-    while(!dlist->empty()) {
-        printf("%s ", dlist->front()->val);
-        dlist->removeFront();
+bool is_equal(const char* a, const char* b) {
+    while (*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
     }
+    return false;
+}
+
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(const char* e);
+    void insert(const char* e);
+    void remove(const char* e);
+    Node* retrieve(const char* e);
+private:
+    DLL* HM;
+    int n;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), n(0), capacity(cap) { };
+int HashMap::hash(const char* e) {
+    int hash = 31;
+    int c;
+   
+    while (c = *e++) {
+        hash = (((hash << 5) + hash) + c) % capacity;
+    }
+    return hash % capacity;
+}
+void HashMap::insert(const char* e) {
+    int hashVal = hash(e);
+    HM[hashVal].addBack(e);
+}
+void HashMap::remove(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(e);
+    if (node != NULL) HM[hashVal].remove(node);
+    return;
+};
+Node* HashMap::retrieve(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return NULL;
+    
+    Node* node = HM[hashVal].front();
+    while (node->val != NULL) {
+        if (is_equal(e, node->val)) return node;
+        node = node->next;
+    }
+    return NULL;
+}
+
+int main() {
+    HashMap* hm = new HashMap();
+    
+    hm->insert("It's a girl,");
+    hm->insert("it's a rhyme,");
+    hm->insert("it's a cold,");
+    hm->insert("it's the mumps");
+    
+    printf("%s ", hm->retrieve("It's a girl,")->val);
+    printf("%s ", hm->retrieve("it's a rhyme,")->val);
+    printf("%s ", hm->retrieve("it's a cold,")->val);
+    printf("%s", hm->retrieve("it's the mumps")->val);
+    
     printf("\nFIN\n");
     
     return 0;
