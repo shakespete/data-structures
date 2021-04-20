@@ -1,134 +1,57 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-struct Node {
-    const char* val;
-    Node* next;
-    Node* prev;
-};
-
-class DLL {
+class DStack {
+    enum { DEF_CAP = 2 };
 public:
-    DLL();
-    ~DLL();
+    DStack(int cap = DEF_CAP);
+    ~DStack();
+    int size() const;
     bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, const char* e);
-    void addFront(const char* e);
-    void addBack(const char* e);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
+    int top() const;
+    void push(int e);
+    int pop();
 private:
-    Node* head;
-    Node* tail;
-};
-
-DLL::DLL() {
-    head = new Node;
-    tail = new Node;
-    head->next = tail;
-    tail->prev = head;
-    head->val = NULL;
-    tail->val = NULL;
-}
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? NULL : head->next; }
-Node* DLL::back() const { return empty() ? NULL : tail->prev; }
-void DLL::add(Node* v, const char* e) {
-    Node* u = new Node;
-    u->val = e;
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(const char* e) { add(head->next, e); }
-void DLL::addBack(const char* e) { add(tail, e); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
-    }
-}
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack()  { if (!empty()) remove(tail->prev); }
-
-bool is_equal(const char* a, const char* b) {
-    while (*a == *b) {
-        if (*a == '\0') return true;
-        ++a;
-        ++b;
-    }
-    return false;
-}
-
-class HashMap {
-    enum { DEF_CAP = 100 };
-public:
-    HashMap(int cap = DEF_CAP);
-    int hash(const char* e);
-    void insert(const char* e);
-    void remove(const char* e);
-    Node* retrieve(const char* e);
-private:
-    DLL* HM;
-    int n;
+    int* S;
+    int t;
     int capacity;
 };
 
-HashMap::HashMap(int cap) : HM(new DLL[cap]), n(0), capacity(cap) { };
-int HashMap::hash(const char* e) {
-    int hash = 31;
-    int c;
-   
-    while (c = *e++) {
-        hash = (((hash << 5) + hash) + c) % capacity;
+
+DStack::DStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { };
+DStack::~DStack() { while (!empty()) pop(); }
+int DStack::size() const { return t + 1; }
+bool DStack::empty() const { return size() == 0; }
+int DStack::top() const { return empty() ? -1 : S[t]; }
+void DStack::push(int e) {
+    if (size() == capacity) {
+        int* B = new int[capacity * 2];
+        for (int i = 0; i < capacity; ++i) B[i] = S[i];
+        S = B;
+        capacity *= 2;
     }
-    return hash % capacity;
+    S[++t] = e;
 }
-void HashMap::insert(const char* e) {
-    int hashVal = hash(e);
-    HM[hashVal].addBack(e);
-}
-void HashMap::remove(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return;
-    
-    Node* node = retrieve(e);
-    if (node != NULL) HM[hashVal].remove(node);
-    return;
-};
-Node* HashMap::retrieve(const char* e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return NULL;
-    
-    Node* node = HM[hashVal].front();
-    while (node->val != NULL) {
-        if (is_equal(e, node->val)) return node;
-        node = node->next;
-    }
-    return NULL;
+int DStack::pop() {
+    if (!empty()) return S[t--];
+    return -1;
 }
 
 int main() {
-    HashMap* hm = new HashMap();
+    DStack* st = new DStack();
+    st->push(9);
+    st->push(8);
+    st->push(7);
+    st->push(6);
+    st->push(5);
+    st->push(4);
+    st->push(3);
+    st->push(2);
+    st->push(1);
     
-    hm->insert("It's a girl,");
-    hm->insert("it's a rhyme,");
-    hm->insert("it's a cold,");
-    hm->insert("it's the mumps");
-    
-    printf("%s ", hm->retrieve("It's a girl,")->val);
-    printf("%s ", hm->retrieve("it's a rhyme,")->val);
-    printf("%s ", hm->retrieve("it's a cold,")->val);
-    printf("%s", hm->retrieve("it's the mumps")->val);
-    
+    while (!st->empty()) {
+        printf("%d ", st->pop());
+    }
     printf("\nFIN\n");
     
     return 0;
