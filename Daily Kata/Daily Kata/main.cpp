@@ -1,58 +1,79 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class DStack {
-    enum { DEF_CAP = 2 };
-public:
-    DStack(int cap = DEF_CAP);
-    ~DStack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(int e);
-    int pop();
-private:
-    int* S;
-    int t;
-    int capacity;
+struct Node {
+    const char* val;
+    Node* next;
+    Node* prev;
 };
 
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
 
-DStack::DStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { };
-DStack::~DStack() { while (!empty()) pop(); }
-int DStack::size() const { return t + 1; }
-bool DStack::empty() const { return size() == 0; }
-int DStack::top() const { return empty() ? -1 : S[t]; }
-void DStack::push(int e) {
-    if (size() == capacity) {
-        int* B = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = S[i];
-        S = B;
-        capacity *= 2;
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->next = tail;
+    tail->prev = head;
+    head->val = NULL;
+    tail->val = NULL;
+}
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
-    S[++t] = e;
 }
-int DStack::pop() {
-    if (!empty()) return S[t--];
-    return -1;
-}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    DStack* st = new DStack();
-    st->push(9);
-    st->push(8);
-    st->push(7);
-    st->push(6);
-    st->push(5);
-    st->push(4);
-    st->push(3);
-    st->push(2);
-    st->push(1);
-    
-    while (!st->empty()) {
-        printf("%d ", st->pop());
+    DLL* dlist = new DLL();
+    dlist->addBack("A mile,");
+    dlist->addBack("a must,");
+    dlist->addBack("a thrust,");
+    dlist->addBack("a bump,");
+    dlist->addBack("It's a girl,");
+    dlist->addBack("it's a rhyme,");
+    dlist->addBack("it's a cold,");
+    dlist->addBack("it's the mumps.");
+
+    while(!dlist->empty()) {
+        printf("%s ", dlist->front()->val);
+        dlist->removeFront();
     }
     printf("\nFIN\n");
-    
     return 0;
 }
