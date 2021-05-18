@@ -46,17 +46,49 @@ void CLL::remove() {
     }
 }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(const char* e);
+    void deq();
+private:
+    CLL CL;
+    int n;
+};
+
+Queue::Queue() : CL(), n(0) {}
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? NULL : CL.front(); }
+void Queue::enq(const char* e) {
+    CL.add(e);
+    CL.advance();
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        CL.remove();
+        --n;
+    }
+}
+
 int main() {
-    CLL* clist = new CLL();
+    Queue* q = new Queue();
     
-    clist->add("a bite,");
-    clist->add("a bee,");
-    clist->add("a grain,");
-    clist->add("A point,");
+//
+    q->enq("A blink,");
+    q->enq("a buzzard,");
+    q->enq("a sudden");
+    q->enq("stroke of night");
     
-    while (!clist->empty()) {
-        printf("%s ", clist->front()->val);
-        clist->remove();
+    while (!q->empty()) {
+        printf("%s ", q->front()->val);
+        q->deq();
     }
     
     printf("\nFIN\n");
