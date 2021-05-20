@@ -2,95 +2,90 @@
 #include <stdio.h>
 
 struct Node {
-    const char* val;
-    Node* next;
+    int val;
 };
 
-class CLL {
+class Heap {
+    enum { DEF_CAP = 100 };
 public:
-    CLL();
-    ~CLL();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(const char* e);
-    void advance();
-    void remove();
-private:
-    Node* cursor;
-};
-
-CLL::CLL() : cursor(NULL) { }
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == NULL;}
-Node* CLL::front() const { return empty() ? NULL : cursor->next; }
-Node* CLL::back() const { return empty() ? NULL : cursor; }
-void CLL::add(const char* e) {
-    Node* v = new Node;
-    v->val = e;
-    if (empty()) {
-        v->next = v;
-        cursor = v;
-    } else {
-        v->next = cursor->next;
-        cursor->next = v;
-    }
-}
-void CLL::advance() { if (!empty()) cursor = cursor->next; }
-void CLL::remove() {
-    if (!empty()) {
-        Node* old = cursor->next;
-        if (old == cursor)  cursor = NULL;
-        else cursor->next = old->next;
-        delete old;
-    }
-}
-
-class Queue {
-public:
-    Queue();
-    ~Queue();
+    Heap(int cap = DEF_CAP);
+    ~Heap();
     int size() const;
     bool empty() const;
-    Node* front() const;
-    void enq(const char* e);
-    void deq();
+    Node* root() const;
+    void push(int e);
+    void pop();
 private:
-    CLL CL;
+    Node** H;
     int n;
+    int capacity;
 };
 
-Queue::Queue() : CL(), n(0) {}
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? NULL : CL.front(); }
-void Queue::enq(const char* e) {
-    CL.add(e);
-    CL.advance();
-    ++n;
+Heap::Heap(int cap) : H(new Node*[cap]), capacity(cap), n(0) { };
+Heap::~Heap() { while (!empty()) pop(); }
+int Heap::size() const { return n; }
+bool Heap::empty() const { return n == 0; }
+Node* Heap::root() const { return empty() ? NULL : H[1];}
+void Heap::push(int e) {
+    if (size() != capacity) {
+        Node* v = new Node;
+        v->val = e;
+        ++n;
+        H[n] = v;
+        
+        int current = n;
+        while (current > 1 && H[current]->val < H[current / 2]->val) {
+            int parent = current / 2;
+            
+            Node* temp = H[parent];
+            H[parent] = H[current];
+            H[current] = temp;
+            current = parent;
+        }
+    }
 }
-void Queue::deq() {
+void Heap::pop() {
     if (!empty()) {
-        CL.remove();
+        delete H[1];
+        H[1] = H[n];
         --n;
+        
+        int current = 1;
+        while (current * 2 <= n) {
+            int child;
+            int left = current * 2;
+            int right = current * 2 + 1;
+            
+            if (left == n) child = left;
+            else child = H[left]->val < H[right]->val ? left : right;
+            
+            if (H[current]->val < H[child]->val) break;
+            
+            Node* temp = H[child];
+            H[child] = H[current];
+            H[current] = temp;
+            current = child;
+        }
     }
 }
 
 int main() {
-    Queue* q = new Queue();
-    
-//
-    q->enq("A blink,");
-    q->enq("a buzzard,");
-    q->enq("a sudden");
-    q->enq("stroke of night");
-    
-    while (!q->empty()) {
-        printf("%s ", q->front()->val);
-        q->deq();
+    Heap* h = new Heap();
+    h->push(7);
+    h->push(5);
+    h->push(1);
+    h->push(6);
+    h->push(3);
+    h->push(8);
+    h->push(2);
+    h->push(4);
+    h->push(0);
+    h->push(9);
+
+    while (!h->empty()) {
+        printf("%d ", h->root()->val);
+        h->pop();
     }
-    
     printf("\nFIN\n");
     
     return 0;
