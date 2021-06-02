@@ -2,61 +2,53 @@
 #include <stdio.h>
 
 struct Node {
-    int val;
+    const char* val;
+    Node* next;
 };
 
-class Stack {
-    enum { DEF_CAP = 2};
+class LL {
 public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
+    LL();
+    ~LL();
     bool empty() const;
-    int top() const;
-    void push(const int e);
-    int pop();
+    Node* front() const;
+    Node* back() const;
+    void add(const char* e);
+    void remove();
 private:
-    int* S;
-    int t;
-    int capacity;
+    Node* head;
 };
 
-Stack::Stack(int cap) : S(new int[cap]), t(-1), capacity(cap) { }
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return size() == 0; }
-int Stack::top() const { return empty() ? NULL : S[t]; }
-void Stack::push(const int e) {
-    if (size() == capacity) {
-        int* B = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = S[i];
-        S = B;
-        delete[] B;
-        capacity *= 2;
-    }
-    S[++t] = e;
+LL::LL() : head(NULL) { };
+LL::~LL() { while (!empty()) remove(); };
+bool LL::empty() const { return head == NULL; }
+Node* LL::front() const { return empty() ? NULL : head; }
+void LL::add(const char* e) {
+    Node* v = new Node;
+    v->val = e;
+    v->next = head;
+    head = v;
 }
-int Stack::pop() {
-    if (!empty()) return S[t--];
-    return -1;
+void LL::remove() {
+    if (!empty()) {
+        Node* old = head;
+        head = old->next;
+        delete old;
+    }
 }
 
 int main() {
-    Stack* st = new Stack();
-    st->push(10);
-    st->push(9);
-    st->push(8);
-    st->push(7);
-    st->push(6);
-    st->push(5);
-    st->push(4);
-    st->push(3);
-    st->push(2);
-    st->push(1);
-    while (!st->empty()) {
-        printf("%d ", st->pop());
+    LL* list = new LL();
+    
+    list->add("a bite,");
+    list->add("a bee,");
+    list->add("a grain,");
+    list->add("A point,");
+    
+    while (!list->empty()) {
+        printf("%s ", list->front()->val);
+        list->remove();
     }
     printf("\nFIN\n");
-    
     return 0;
 }
