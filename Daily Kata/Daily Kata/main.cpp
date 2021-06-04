@@ -3,51 +3,73 @@
 
 struct Node {
     const char* val;
+    Node* prev;
     Node* next;
 };
 
-class LL {
+class DLL {
 public:
-    LL();
-    ~LL();
+    DLL();
+    ~DLL();
     bool empty() const;
     Node* front() const;
     Node* back() const;
-    void add(const char* e);
-    void remove();
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
     Node* head;
+    Node* tail;
 };
 
-LL::LL() : head(NULL) { };
-LL::~LL() { while (!empty()) remove(); };
-bool LL::empty() const { return head == NULL; }
-Node* LL::front() const { return empty() ? NULL : head; }
-void LL::add(const char* e) {
-    Node* v = new Node;
-    v->val = e;
-    v->next = head;
-    head = v;
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->val = NULL;
+    tail->val = NULL;
+    head->next = tail;
+    tail->prev = head;
 }
-void LL::remove() {
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL: head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
     if (!empty()) {
-        Node* old = head;
-        head = old->next;
-        delete old;
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    LL* list = new LL();
+    DLL* dlist = new DLL();
     
-    list->add("a bite,");
-    list->add("a bee,");
-    list->add("a grain,");
-    list->add("A point,");
+    dlist->addBack("A blink,");
+    dlist->addBack("a buzzard,");
+    dlist->addBack("a sudden");
+    dlist->addBack("stroke of night,");
     
-    while (!list->empty()) {
-        printf("%s ", list->front()->val);
-        list->remove();
+    while (!dlist->empty()) {
+        printf("%s ", dlist->front()->val);
+        dlist->removeFront();
     }
     printf("\nFIN\n");
     return 0;
