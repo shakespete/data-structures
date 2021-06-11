@@ -3,74 +3,61 @@
 
 struct Node {
     const char* val;
-    Node* prev;
     Node* next;
 };
 
-class DLL {
+class CLL {
 public:
-    DLL();
-    ~DLL();
+    CLL();
+    ~CLL();
     bool empty() const;
     Node* front() const;
     Node* back() const;
-    void add(Node* v, const char* e);
-    void addFront(const char* e);
-    void addBack(const char* e);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
+    void add(const char* e);
+    void advance();
+    void remove();
 private:
-    Node* head;
-    Node* tail;
+    Node* cursor;
 };
 
-DLL::DLL() {
-    head = new Node;
-    tail = new Node;
-    head->val = NULL;
-    tail->val = NULL;
-    head->next = tail;
-    tail->prev = head;
-}
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? NULL: head->next; }
-Node* DLL::back() const { return empty() ? NULL : tail->prev; }
-void DLL::add(Node* v, const char* e) {
-    Node* u = new Node;
-    u->val = e;
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(const char* e) { add(head->next, e); }
-void DLL::addBack(const char* e) { add(tail, e); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
+CLL::CLL() : cursor(NULL) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node* CLL::front() const { return empty() ? NULL : cursor->next; }
+Node* CLL::back() const { return empty() ? NULL : cursor; }
+void CLL::add(const char* e) {
+    Node* v = new Node;
+    v->val = e;
+    if (empty()) {
+        v->next = v;
+        cursor = v;
+    } else {
+        v->next = cursor->next;
+        cursor->next = v;
     }
 }
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::remove() {
+    if (!empty()) {
+        Node* old = cursor->next;
+        if (cursor == old) cursor = NULL;
+        else cursor->next = old->next;
+        delete old;
+    }
+}
 
 int main() {
-    DLL* dlist = new DLL();
+    CLL* clist = new CLL();
+    clist->add("the sun,");
+    clist->add("a life,");
+    clist->add("of glass,");
+    clist->add("A sliver");
     
-    dlist->addBack("A blink,");
-    dlist->addBack("a buzzard,");
-    dlist->addBack("a sudden");
-    dlist->addBack("stroke of night,");
-    
-    while (!dlist->empty()) {
-        printf("%s ", dlist->front()->val);
-        dlist->removeFront();
+    while (!clist->empty()) {
+        printf("%s ", clist->front()->val);
+        clist->remove();
     }
     printf("\nFIN\n");
+    
     return 0;
 }
