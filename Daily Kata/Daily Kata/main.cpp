@@ -1,58 +1,61 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class Stack {
-    enum { DEF_CAP = 2 };
-public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(const int e);
-    int pop();
-private:
-    int* S;
-    int t;
-    int capacity;
+struct Node {
+    const char* val;
+    Node* next;
 };
 
+class CLL {
+public:
+    CLL();
+    ~CLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(const char* e);
+    void advance();
+    void remove();
+private:
+    Node* cursor;
+};
 
-Stack::Stack(int cap) : S(new int[cap]), t(-1), capacity(cap) {}
-Stack::~Stack() { while(!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const {return t + 1 == 0;}
-int Stack::top() const { return empty() ? -1 : S[t]; }
-void Stack::push(const int e) {
-    if (size() == capacity) {
-        int* B = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) B[i] = S[i];
-        S = B;
-        capacity *= 2;
+CLL::CLL() : cursor(NULL) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node* CLL::front() const { return empty() ? NULL : cursor->next; }
+Node* CLL::back() const { return empty() ? NULL : cursor; }
+void CLL::add(const char* e) {
+    Node* v = new Node;
+    v->val = e;
+    if (empty()) {
+        v->next = v;
+        cursor = v;
+    } else {
+        v->next = cursor->next;
+        cursor->next = v;
     }
-    S[++t] = e;
 }
-int Stack::pop() {
-    if (empty()) return -1;
-    return S[t--];
-    
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::remove() {
+    Node* old = cursor->next;
+    if (cursor == old) cursor = NULL;
+    else cursor->next = old->next;
+    delete old;
 }
 
 int main() {
-    Stack* st = new Stack();
-    st->push(9);
-    st->push(8);
-    st->push(7);
-    st->push(6);
-    st->push(5);
-    st->push(4);
-    st->push(3);
-    st->push(2);
-    st->push(1);
+    CLL* clist = new CLL();
+    clist->add("of the road,");
+    clist->add("it's the end");
+    clist->add("a stone,");
+    clist->add("A stick,");
     
-    while (!st->empty()) {
-        printf("%d ", st->pop());
+    while (!clist->empty()) {
+        printf("%s ", clist->front()->val);
+        clist->remove();
     }
     printf("\nFIN\n");
+    
     return 0;
 }
