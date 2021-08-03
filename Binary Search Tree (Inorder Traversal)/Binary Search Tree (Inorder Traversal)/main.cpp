@@ -11,6 +11,7 @@ class BinarySearchTree {
 public:
     Node* insert(Node* u, int val);
     void inOrder(Node* u);
+    void preOrder(Node* u);
     void postOrder(Node* u);
 };
 Node* BinarySearchTree::insert(Node* u, int val) {
@@ -38,6 +39,13 @@ void BinarySearchTree::inOrder(Node* u) {
         inOrder(u->right);
     }
 }
+void BinarySearchTree::preOrder(Node* u) {
+    if (u != NULL) {
+        printf("%d ", u->value);
+        preOrder(u->left);
+        preOrder(u->right);
+    }
+}
 void BinarySearchTree::postOrder(Node* u) {
     if (u != NULL) {
         postOrder(u->left);
@@ -55,11 +63,13 @@ int main() {
         root = tree->insert(root, arr[i]);
     
 //    tree->inOrder(root);
-    tree->postOrder(root);
+    tree->preOrder(root);
+//    tree->postOrder(root);
     printf("\nFIN\n");
     return 0;
 }
 // Inorder: 1 2 3 4 5 6
+// Preorder: 1 2 5 3 4 6
 // Postorder: 4 3 6 5 2 1
 
 //    1
