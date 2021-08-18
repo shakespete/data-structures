@@ -3,53 +3,75 @@
 
 struct Node {
     const char* val;
+    Node* prev;
     Node* next;
 };
 
-class LL {
+class DLL {
 public:
-    LL();
-    ~LL();
+    DLL();
+    ~DLL();
     bool empty() const;
     Node* front() const;
-    void add(const char* e);
-    void remove();
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
     Node* head;
+    Node* tail;
 };
 
-
-LL::LL() : head(NULL) { }
-LL::~LL() { while (!empty()) remove(); }
-bool LL::empty() const { return head == NULL;}
-Node* LL::front() const { return empty() ? NULL : head; }
-void LL::add(const char* e) {
-    Node* node = new Node;
-    node->val = e;
-    node->next = head;
-    head = node;
+DLL::DLL() {
+    head = new Node;
+    tail = new Node;
+    head->next = tail;
+    tail->prev = head;
+    head->val = NULL;
+    tail->val = NULL;
 }
-void LL::remove() {
+DLL::~DLL() { while (!empty()) removeBack(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? NULL : head->next; }
+Node* DLL::back() const { return empty() ? NULL : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node;
+    u->val = e;
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
     if (!empty()) {
-        Node* old = head;
-        head = old->next;
-        delete old;
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
 
 int main() {
-    LL* l = new LL();
+    DLL* dlist = new DLL();
+    dlist->addBack("Off the");
+    dlist->addBack("Florida Keys,");
+    dlist->addBack("there's a");
+    dlist->addBack("place called");
+    dlist->addBack("Kokomo...");
     
-    l->add("of the road,");
-    l->add("it's the end");
-    l->add("a stone,");
-    l->add("A stick,");
-    
-    while (!l->empty()) {
-        printf("%s ", l->front()->val);
-        l->remove();
+    while (!dlist->empty()) {
+        printf("%s ", dlist->front()->val);
+        dlist->removeFront();
     }
     printf("\nFIN\n");
-    
     return 0;
 }
