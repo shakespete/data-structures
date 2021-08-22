@@ -59,19 +59,75 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+bool is_equal(const char* a, const char* b) {
+    while (*a == *b) {
+        if (*a == '\0') return true;
+        ++a;
+        ++b;
+    }
+    return false;
+}
+
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(const char* e) const;
+    void insert(const char* e);
+    Node* retrieve(const char* e);
+    void remove(const char* e);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) {}
+int HashMap::hash(const char* e) const {
+    int hash = 31;
+    int c;
+    while (c = *e++) {
+        hash = (((hash << 5) + hash) + c) % capacity;
+    }
+    return hash % capacity;
+}
+void HashMap::insert(const char* e) {
+    int hashVal = hash(e);
+    HM[hashVal].addBack(e);
+}
+Node* HashMap::retrieve(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return NULL;
+    
+    Node* node = HM[hashVal].front();
+    while (node != NULL) {
+        if(is_equal(e, node->val)) return node;
+        node = node->next;
+    }
+    return NULL;
+}
+void HashMap::remove(const char* e) {
+    int hashVal = hash(e);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(e);
+    if (node != NULL) HM[hashVal].remove(node);
+    return;
+}
 
 int main() {
-    DLL* dlist = new DLL();
-    dlist->addBack("Off the");
-    dlist->addBack("Florida Keys,");
-    dlist->addBack("there's a");
-    dlist->addBack("place called");
-    dlist->addBack("Kokomo...");
+    HashMap* hm = new HashMap();
+    hm->insert("That's where");
+    hm->insert("you want");
+    hm->insert("to go");
+    hm->insert("to get away");
+    hm->insert("from it all");
     
-    while (!dlist->empty()) {
-        printf("%s ", dlist->front()->val);
-        dlist->removeFront();
-    }
+    printf("%s ", hm->retrieve("That's where")->val);
+    printf("%s ", hm->retrieve("you want")->val);
+    printf("%s ", hm->retrieve("to go")->val);
+    printf("%s ", hm->retrieve("to get away")->val);
+    printf("%s ", hm->retrieve("from it all")->val);
+    
     printf("\nFIN\n");
     return 0;
 }
