@@ -1,57 +1,47 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class Stack {
-    enum { DEF_CAP = 3 };
+class Queue {
+    enum { DEF_CAP = 20 };
 public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(int e);
-    int pop();
+    Queue(int cap = DEF_CAP);
+    ~Queue();
+    bool empty();
+    void enq(int e);
+    int deq();
 private:
-    int* S;
-    int t;
+    int* Q;
     int capacity;
+    int front;
+    int rear;
 };
 
-Stack::Stack(int cap) : S(new int[cap]), t(-1), capacity(cap) { };
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return t == -1; }
-int Stack::top() const { return empty() ? -1 : S[t]; }
-void Stack::push(int e) {
-    if (size() == capacity) {
-        int* T = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) T[i] = S[i];
-        S = T;
-    }
-    S[++t] = e;
-}
-int Stack::pop() {
-    if (!empty()) return S[t--];
+Queue::Queue(int cap) : front(0), rear(0), capacity(cap), Q(new int[cap]) { };
+Queue::~Queue() { while (!empty()) deq(); }
+bool Queue::empty() { return front == rear; }
+void Queue::enq(int e) { Q[rear++] = e; }
+int Queue::deq() {
+    if (!empty()) return Q[front++];
     return -1;
 }
 
 int main() {
-    Stack* st = new Stack();
-    st->push(0);
-    st->push(1);
-    st->push(2);
-    st->push(3);
-    st->push(4);
-    st->push(5);
-    st->push(6);
-    st->push(7);
-    st->push(8);
-    st->push(9);
-    st->push(10);
-    st->push(11);
+    Queue* q = new Queue();
+    q->enq(0);
+    q->enq(1);
+    q->enq(2);
+    q->enq(3);
+    q->enq(4);
+    q->enq(5);
+    q->enq(6);
+    q->enq(7);
+    q->enq(8);
+    q->enq(9);
+    q->enq(10);
+    q->enq(11);
     
-    while(!st->empty()) {
-        printf("%d ", st->pop());
+    while(!q->empty()) {
+        printf("%d ", q->deq());
     }
     
     printf("\nFIN\n");
