@@ -1,49 +1,76 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class Queue {
-    enum { DEF_CAP = 20 };
-public:
-    Queue(int cap = DEF_CAP);
-    ~Queue();
-    bool empty();
-    void enq(int e);
-    int deq();
-private:
-    int* Q;
-    int capacity;
-    int front;
-    int rear;
+struct Node {
+    const char* val;
+    Node* prev;
+    Node* next;
 };
 
-Queue::Queue(int cap) : front(0), rear(0), capacity(cap), Q(new int[cap]) { };
-Queue::~Queue() { while (!empty()) deq(); }
-bool Queue::empty() { return front == rear; }
-void Queue::enq(int e) { Q[rear++] = e; }
-int Queue::deq() {
-    if (!empty()) return Q[front++];
-    return -1;
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, const char* e);
+    void addFront(const char* e);
+    void addBack(const char* e);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+
+DLL::DLL() {
+    head = new Node();
+    tail = new Node();
+    head->val = nullptr;
+    tail->val = nullptr;
+    head->next = tail;
+    tail->prev = head;
+};
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail;}
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
+void DLL::add(Node* v, const char* e) {
+    Node* u = new Node();
+    u->val = e;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
+};
+void DLL::addFront(const char* e) { add(head->next, e); }
+void DLL::addBack(const char* e) { add(tail, e); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
+    }
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    Queue* q = new Queue();
-    q->enq(0);
-    q->enq(1);
-    q->enq(2);
-    q->enq(3);
-    q->enq(4);
-    q->enq(5);
-    q->enq(6);
-    q->enq(7);
-    q->enq(8);
-    q->enq(9);
-    q->enq(10);
-    q->enq(11);
+    DLL* dlist = new DLL();
+    dlist->addBack("darkness");
+    dlist->addFront("Hello");
+    dlist->addBack("my");
+    dlist->addBack("old");
+    dlist->addBack("friend");
     
-    while(!q->empty()) {
-        printf("%d ", q->deq());
+    while(!dlist->empty()) {
+        printf("%s ", dlist->front()->val);
+        dlist->removeFront();
     }
-    
     printf("\nFIN\n");
     return 0;
 }
