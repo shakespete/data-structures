@@ -113,7 +113,7 @@ BST *BST::treeSuccessor(BST *x) {
 }
 
 int main() {
-    BST* root = new BST(12);
+    BST *root = new BST(12);
     root->insert(root, 5);
     root->insert(root, 18);
     root->insert(root, 2);
@@ -123,13 +123,35 @@ int main() {
     root->insert(root, 13);
     root->insert(root, 17);
     
-//    root->remove(root, 13);
-//    root->inorderTreeWalk(root);
+    root->remove(root, 12);
+    printf("Prev root -> %d\n", root->key);
+    // 12 is current root, need to re-assign pointer to new root
+    if (root->left) root = root->left->p;
+    else if (root->right) root = root->right->p;
+
+    printf("New root -> %d\n", root->key);
+    printf("Right of root -> %d\n", root->right->key);
+    printf("Parent of right -> %d\n", root->right->p->key);
+    printf("Left of root -> %d\n", root->left->key);
+    printf("Parent of left -> %d\n", root->left->p->key);
+    root->inorderTreeWalk(root);
 //    root->insert(root, 18);
 //    root->inorderTreeWalk(root);
-//    root->remove(root, 18);
+//    root->remove(root, 15);
 //    root->inorderTreeWalk(root);
 //    root->insert(root, 11);
-    root->inorderTreeWalk(root);
+//    root->inorderTreeWalk(root);
     return 0;
 }
+
+/**
+ Starting BST:
+ 
+      12                                                                 13
+    /           \                                                        /           \
+   5             18                                                  5             18
+  /    \         /      \         Delete root node =>     /    \         /      \
+ 2      9    15      19                                         2      9    15      19
+       /    \                                                                    \
+      13   17                                                                 17
+ */
