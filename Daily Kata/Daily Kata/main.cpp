@@ -1,57 +1,130 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-class Stack {
-    enum { DEF_CAP = 2 };
+class Node {
 public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(int e);
-    void pop();
-private:
-    int *S;
-    int t;
-    int capacity;
+    int value;
+    Node *left;
+    Node *right;
+    Node *parent;
+    Node(int e) {
+        value = e;
+        left = nullptr;
+        right = nullptr;
+        parent = nullptr;
+    }
 };
 
-Stack::Stack(int cap) : S(new int[cap]), t(-1), capacity(cap) { }
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return size() == 0; }
-int Stack::top() const { return empty() ? -1 : S[t]; }
-void Stack::push(int e) {
-    if (size() == capacity) {
-        int *T = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) T[i] = S[i];
-        S = T;
-        capacity *= 2;
+class BST {
+public:
+    BST();
+    Node *getRoot() const;
+    Node *treeSearch(Node* x, int e) const;
+    Node *treeMin(Node *x) const;
+    void insert(int e);
+    void remove(int e);
+    void transplant(Node *u, Node *v);
+    void inorderTreeWalk(Node *x) const;
+private:
+    Node *root;
+};
+
+BST::BST() : root(nullptr) { }
+Node *BST::getRoot() const { return root; }
+Node *BST::treeSearch(Node * x, int e) const {
+    while (x && x->value != e) {
+        if (e < x->value) x = x->left;
+        else x = x->right;
     }
-    S[++t] = e;
+    return x;
 }
-void Stack::pop() { if (!empty()) t--; }
+Node *BST::treeMin(Node *x) const {
+    while (x->left) x = x->left;
+    return x;
+}
+void BST::insert(int e) {
+    Node *x = root;
+    Node *y = nullptr; // trailing pointer
+    Node* z = new Node(e);
+    
+    while (x) {   // traverse down the tree
+        y = x;
+        if (z->value < x->value) x = x->left;
+        else x = x->right;
+    }
+    
+    z->parent = y;                              // assign parent of z
+    if (!y) root = z;                           // empty, assign z as root
+    else if (z->value < y->value) y->left = z;  // assign z as left child
+    else y->right = z;                          // assign z as right child
+}
+void BST::remove(int e) {
+    Node *z = treeSearch(root, e);
+    
+    if (!z->left) transplant(z, z->right);
+    else if (!z->right) transplant(z, z->left);
+    else {
+        Node *y = treeMin(z->right);
+        
+        // if z is not y's parent
+        if (y->parent != z) {
+            transplant(y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+        
+        transplant(z, y);
+        y->left = z->left;
+        y->left->parent = y;
+    }
+}
+void BST::transplant(Node *u, Node *v) {
+    if (!u->parent) root = v;                            // assign as root
+    else if (u == u->parent->left) u->parent->left = v;  // assign as left child
+    else u->parent->right = v;                           // assign as right child
+    
+    if (v) v->parent = u->parent;                        // assign parent
+}
+void BST::inorderTreeWalk(Node *x) const {
+   if (x) {
+      inorderTreeWalk(x->left);
+      printf("%d\n", x->value);
+      inorderTreeWalk(x->right);
+   }
+}
 
 int main() {
-    Stack* st = new Stack();
-    st->push(1);
-    st->push(2);
-    st->push(3);
-    st->push(4);
-    st->push(5);
-    st->push(6);
-    st->push(7);
-    st->push(8);
-    st->push(9);
-    st->push(10);
+    BST *bst = new BST();
+    bst->insert(12);
+    bst->insert(5);
+    bst->insert(18);
+    bst->insert(2);
+    bst->insert(9);
+    bst->insert(15);
+    bst->insert(19);
+    bst->insert(13);
+    bst->insert(17);
     
-    printf("SIZE: %d\n", st->size());
-    while (!st->empty()) {
-        printf("%d ", st->top());
-        st->pop();
-    }
-    printf("\nSIZE: %d", st->size());
-    printf("\nFIN\n");
+    
+    bst->inorderTreeWalk(bst->getRoot());
+    printf("Remove 12\n");
+    bst->remove(12);
+    bst->inorderTreeWalk(bst->getRoot());
+    bst->remove(17);
+    printf("Remove 17\n");
+    bst->inorderTreeWalk(bst->getRoot());
     return 0;
 }
+
+
+/**
+ Observe that the member functions size, empty, and top are all declared to be const, which informs the compiler that they do not alter the contents of the stack.
+  
+*/
+//          12
+//        /    \
+//      5       18
+//     / \     /  \
+//    2   9   15  19
+//           /  \
+//          13  17
