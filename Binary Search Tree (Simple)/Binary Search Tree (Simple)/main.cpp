@@ -24,19 +24,16 @@ public:
 class BST {
 public:
     BST();
-    Node *getRoot() const;
+    Node *root;
     Node *treeSearch(Node* x, int e) const; // O(h) where h = height of tree
     Node *treeMin(Node *x) const;           // O(h)
     void insert(int e);                     // O(h)
     void remove(int e);                     // O(h)
     void transplant(Node *u, Node *v);      // O(1)
     void inorderTreeWalk(Node *x) const;    // O(n) where n = number of nodes
-private:
-    Node *root;
 };
 
 BST::BST() : root(nullptr) { }
-Node *BST::getRoot() const { return root; }
 Node *BST::treeSearch(Node *x, int e) const {
     while (x && x->value != e) {
         if (e < x->value) x = x->left;
@@ -111,20 +108,19 @@ int main() {
     bst->insert(13);
     bst->insert(17);
     
-    bst->inorderTreeWalk(bst->getRoot());
+    bst->inorderTreeWalk(bst->root);
     printf("Remove 12\n");
     bst->remove(12);
-    bst->inorderTreeWalk(bst->getRoot());
+    bst->inorderTreeWalk(bst->root);
     bst->remove(17);
     printf("Remove 17\n");
-    bst->inorderTreeWalk(bst->getRoot());
+    bst->inorderTreeWalk(bst->root);
     return 0;
 }
 
 
-/**
- Observe that the member functions size, empty, and top are all declared to be const, which informs the compiler that they do not alter the contents of the stack.
-*/
+// Observe that the member functions treeSearch, treeMin, and inorderTreeWalk are all declared to be const,
+// which informs the compiler that they do not alter the contents of the BST.
 
 //          12
 //        /    \
