@@ -14,33 +14,32 @@ class MaxHeap {
 public:
     MaxHeap(vector<int> &vector);
     vector<int> heap;
-    vector<int> buildMaxHeap(vector<int> &vector);  // O(n) time | O(1) space
-    void maxHeapify(int i, vector<int> &vector);    // O(log(n)) time | O(1) space
-    void insert(int val);                           // O(log(n)) time | O(1) space
-    int extractMax();                               // O(log(n)) time | O(1) space
+    vector<int> buildMaxHeap(vector<int> &vector);                // O(n) time | O(1) space
+    void maxHeapify(int i, vector<int> &vector, int heapSize);    // O(log(n)) time | O(1) space
+    void insert(int val);                                         // O(log(n)) time | O(1) space
+    int extractMax();                                             // O(log(n)) time | O(1) space
 };
 
-MaxHeap::MaxHeap(vector<int> &vector) {
-    heap = buildMaxHeap(vector);
-}
+MaxHeap::MaxHeap(vector<int> &vector) { heap = buildMaxHeap(vector); }
 vector<int> MaxHeap::buildMaxHeap(vector<int> &vector) {
-    int parentIdx = (int)vector.size() / 2 - 1;
-    for (int i = parentIdx; i >= 0; --i) maxHeapify(i, vector);
+    int heapSize = (int)vector.size();
+    int parentIdx = heapSize / 2 - 1;
+    for (int i = parentIdx; i >= 0; --i) maxHeapify(i, vector, heapSize);
     return vector;
 }
-void MaxHeap::maxHeapify(int i, vector<int> &vector) {
+void MaxHeap::maxHeapify(int i, vector<int> &vector, int heapSize) {
     int l = 2 * i + 1;
     int r = 2 * i + 2;
     
     int largest;
-    if (l < vector.size() && vector[l] > vector[i]) largest = l;
+    if (l < heapSize && vector[l] > vector[i]) largest = l;
     else largest = i;
     
-    if (r < vector.size() && vector[r] > vector[largest]) largest = r;
+    if (r < heapSize && vector[r] > vector[largest]) largest = r;
     
     if (largest != i) {
         swap(vector[i], vector[largest]);
-        maxHeapify(largest, vector);
+        maxHeapify(largest, vector, heapSize);
     }
 }
 void MaxHeap::insert(int val) {
@@ -56,12 +55,13 @@ void MaxHeap::insert(int val) {
     }
 }
 int MaxHeap::extractMax() {
-    if (heap.size() == 0) return -1;
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
     
     int max = heap[0];
-    heap[0] = heap[heap.size() - 1];
+    heap[0] = heap[heapSize - 1];
     heap.pop_back();
-    maxHeapify(0, heap);
+    maxHeapify(0, heap, heapSize);
     
     return max;
 }
