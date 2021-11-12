@@ -3,137 +3,114 @@
 
 using namespace std;
 
-struct Node {
-    const char *val;
-    Node *prev;
-    Node *next;
-};
-
-class DLL {
+class Node {
 public:
-    DLL();
-    ~DLL();
-    bool empty() const;
-    Node *front() const;
-    Node *back() const;
-    void add(Node *v, const char *e);
-    void addFront(const char *e);
-    void addBack(const char *e);
-    void remove(Node *v);
-    void removeFront();
-    void removeBack();
-private:
-    Node *head;
-    Node *tail;
+    int val;
+    Node *left;
+    Node *right;
+    Node *parent;
+    Node(int e) {
+        val = e;
+        left = nullptr;
+        right = nullptr;
+        parent = nullptr;
+    }
 };
 
-DLL::DLL() {
-    head = new Node;
-    tail = new Node;
-    head->next = tail;
-    tail->prev = head;
-    head->val = nullptr;
-    tail->val = nullptr;
-    
-}
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node *DLL::front() const { return empty() ? nullptr : head->next; }
-Node *DLL::back() const { return empty() ? nullptr : tail->prev; }
-void DLL::add(Node *v, const char *e) {
-    Node *u = new Node;
-    u->val = e;
-    
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(const char *e) { add(head->next, e); }
-void DLL::addBack(const char *e) { add(tail, e); }
-void DLL::remove(Node *v) {
-    if (!empty()) {
-        Node *u = v->prev;
-        Node *w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
-    }
-}
-void DLL::removeFront() { remove(head->next); }
-void DLL::removeBack() { remove(tail->prev); }
-
-bool is_equal(const char *a, const char *b) {
-    while (*a == *b) {
-        if (*a == '\0') return true;
-        ++a;
-        ++b;
-    }
-    return false;
-}
-
-class HashMap {
-    enum { DEF_CAP = 50 };
+class BST {
 public:
-    HashMap(int cap = DEF_CAP);
-    int hash(const char *e);
-    void insert(const char *e);
-    void remove(const char *e);
-    Node *retrieve(const char *e);
-private:
-    DLL *HM;
-    int capacity;
+    BST();
+    Node *root;
+    Node *treeSearch(Node *x, int e);
+    Node *treeMin(Node *x);
+    void insert(int e);
+    void remove(int e);
+    void transplant(Node *u, Node *v);
+    void inorderTraversal(Node *x);
 };
 
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(const char *e) {
-    int hash = 33;
-    int c;
-    while (c = *e++) {
-        hash = (((hash << 5) + hash) + c) % capacity;
+BST::BST() : root(nullptr) { }
+Node *BST::treeSearch(Node *x, int e) {
+    while (x && x->val != e) {
+        if (e < x->val) x = x->left;
+        else x = x->right;
     }
-    return hash % capacity;
+    return x;
 }
-void HashMap::insert(const char *e) {
-    int hashVal = hash(e);
-    HM[hashVal].addBack(e);
+Node *BST::treeMin(Node *x) {
+    while (x && x->left) x = x->left;
+    return x;
 }
-void HashMap::remove(const char *e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return;
+void BST::insert(int e) {
+    Node *x = root;
+    Node *y = nullptr;
+    Node *z = new Node(e);
     
-    Node *node = retrieve(e);
-    if (node) HM[hashVal].remove(node);
-    return;
-}
-Node *HashMap::retrieve(const char *e) {
-    int hashVal = hash(e);
-    if (HM[hashVal].empty()) return nullptr;
-    
-    Node *node = HM[hashVal].front();
-    while (node) {
-        if (is_equal(node->val, e)) return node;
-        node = node->next;
+    while (x) {
+        y = x;
+        if (e < x->val) x = x->left;
+        else x = x->right;
     }
-    return nullptr;
+    
+    z->parent = y;
+    if (!y) root = z;
+    else if (e < y->val) y->left = z;
+    else y->right = z;
 }
+void BST::remove(int e) {
+    Node *z = treeSearch(root, e);
+    
+    if (!z->left) transplant(z, z->right);
+    else if (!z->right) transplant(z, z->left);
+    else {
+        Node *y = treeMin(z->right);
+        
+        if (y->parent != z) {
+            transplant(y, y->right);
+            y->right = z->right;
+            z->right->parent = y;
+        }
+        
+        transplant(z, y);
+        y->left = z->left;
+        z->left->parent = y;
+    }
+}
+void BST::transplant(Node *u, Node *v) {
+    if (!u->parent) root = v;
+    else if (u->parent->left == u) u->parent->left = v;
+    else u->parent->right = v;
+    
+    if (v) v->parent = u->parent;
+}
+void BST::inorderTraversal(Node *x) {
+    if (x) {
+        inorderTraversal(x->left);
+        printf("%d ", x->val);
+        inorderTraversal(x->right);
+    }
+}
+
 
 int main() {
-    HashMap *hm = new HashMap();
+    BST *bst = new BST();
+    bst->insert(12);
+    bst->insert(5);
+    bst->insert(18);
+    bst->insert(2);
+    bst->insert(9);
+    bst->insert(15);
+    bst->insert(19);
+    bst->insert(13);
+    bst->insert(17);
     
-    hm->insert("You know");
-    hm->insert("to love\n");
-    hm->insert("We're no");
-    hm->insert("strangers");
-    hm->insert("and so do I");
-    hm->insert("the rules");
-    
-    printf("%s ", hm->retrieve("We're no")->val);
-    printf("%s ", hm->retrieve("strangers")->val);
-    printf("%s", hm->retrieve("to love\n")->val);
-    printf("%s ", hm->retrieve("You know")->val);
-    printf("%s ", hm->retrieve("the rules")->val);
-    printf("%s ", hm->retrieve("and so do I")->val);
+    bst->inorderTraversal(bst->root);
+    printf("\nRemove 12\n");
+    bst->remove(12);
+    bst->inorderTraversal(bst->root);
+    bst->remove(17);
+    printf("\nRemove 17\n");
+    bst->inorderTraversal(bst->root);
     
     printf("\nFIN\n");
     return 0;
