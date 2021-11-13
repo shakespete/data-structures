@@ -1,117 +1,92 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <string>
 
 using namespace std;
 
-class Node {
+class TrieNode {
 public:
-    int val;
-    Node *left;
-    Node *right;
-    Node *parent;
-    Node(int e) {
-        val = e;
-        left = nullptr;
-        right = nullptr;
-        parent = nullptr;
-    }
-};
-
-class BST {
-public:
-    BST();
-    Node *root;
-    Node *treeSearch(Node *x, int e);
-    Node *treeMin(Node *x);
-    void insert(int e);
-    void remove(int e);
-    void transplant(Node *u, Node *v);
-    void inorderTraversal(Node *x);
-};
-
-BST::BST() : root(nullptr) { }
-Node *BST::treeSearch(Node *x, int e) {
-    while (x && x->val != e) {
-        if (e < x->val) x = x->left;
-        else x = x->right;
-    }
-    return x;
-}
-Node *BST::treeMin(Node *x) {
-    while (x && x->left) x = x->left;
-    return x;
-}
-void BST::insert(int e) {
-    Node *x = root;
-    Node *y = nullptr;
-    Node *z = new Node(e);
-    
-    while (x) {
-        y = x;
-        if (e < x->val) x = x->left;
-        else x = x->right;
-    }
-    
-    z->parent = y;
-    if (!y) root = z;
-    else if (e < y->val) y->left = z;
-    else y->right = z;
-}
-void BST::remove(int e) {
-    Node *z = treeSearch(root, e);
-    
-    if (!z->left) transplant(z, z->right);
-    else if (!z->right) transplant(z, z->left);
-    else {
-        Node *y = treeMin(z->right);
-        
-        if (y->parent != z) {
-            transplant(y, y->right);
-            y->right = z->right;
-            z->right->parent = y;
+    int key;
+    bool isEnd;
+    bool isDeleted;
+    TrieNode **children;
+    TrieNode() {
+        key = 0;
+        isEnd = false;
+        isDeleted = false;
+        children = new TrieNode *[26];
+        for (int i = 0; i < 26; ++i) {
+            children[i] = nullptr;
         }
-        
-        transplant(z, y);
-        y->left = z->left;
-        z->left->parent = y;
     }
-}
-void BST::transplant(Node *u, Node *v) {
-    if (!u->parent) root = v;
-    else if (u->parent->left == u) u->parent->left = v;
-    else u->parent->right = v;
-    
-    if (v) v->parent = u->parent;
-}
-void BST::inorderTraversal(Node *x) {
-    if (x) {
-        inorderTraversal(x->left);
-        printf("%d ", x->val);
-        inorderTraversal(x->right);
-    }
-}
+};
 
+class Trie {
+public:
+    Trie();
+    int find(string word);
+    void insert(string word, int k);
+    void remove(string word);
+    TrieNode *root;
+};
+
+Trie::Trie() { root = new TrieNode(); }
+int Trie::find(string word) {
+    TrieNode *crawler = root;
+    
+    int idx = 0;
+    for (auto c : word) {
+        idx = c - 'a'; // case sensitive
+        if (crawler->children[idx] == nullptr) return -1;
+        
+        crawler = crawler->children[idx];
+    }
+    
+    if (crawler->isEnd && !crawler->isDeleted) return crawler->key;
+    return -1;
+}
+void Trie::insert(string word, int k) {
+    TrieNode *crawler = root;
+    
+    int idx = 0;
+    for (auto c : word) {
+        idx = c - 'a'; // case sensitive
+        if (crawler->children[idx] == nullptr)
+            crawler->children[idx] = new TrieNode();
+        
+        crawler = crawler->children[idx];
+    }
+    
+    crawler->isEnd = true;
+    crawler->key = k;
+}
+void Trie::remove(string word) {
+    TrieNode *crawler = root;
+    
+    int idx = 0;
+    for (auto c : word) {
+        idx = c - 'a'; // case sensitive
+        if (crawler->children[idx] == nullptr) return;
+        crawler = crawler->children[idx];
+    }
+    
+    if (crawler->isEnd) crawler->isDeleted = true;
+}
 
 int main() {
-    BST *bst = new BST();
-    bst->insert(12);
-    bst->insert(5);
-    bst->insert(18);
-    bst->insert(2);
-    bst->insert(9);
-    bst->insert(15);
-    bst->insert(19);
-    bst->insert(13);
-    bst->insert(17);
+    int uniqId = 0;
     
-    bst->inorderTraversal(bst->root);
-    printf("\nRemove 12\n");
-    bst->remove(12);
-    bst->inorderTraversal(bst->root);
-    bst->remove(17);
-    printf("\nRemove 17\n");
-    bst->inorderTraversal(bst->root);
+    Trie* t = new Trie();
+    t->insert("sing", ++uniqId);
+    t->insert("sip", ++uniqId);
+    t->insert("ask", ++uniqId);
     
-    printf("\nFIN\n");
+    printf("%d\n", t->find("sing"));
+    printf("%d\n", t->find("sip"));
+    printf("%d\n", t->find("ask"));
+    printf("%d\n", t->find("sin"));
+    printf("%d\n", t->find("as"));
+    t->remove("sing");
+    printf("%d\n", t->find("sing"));
     return 0;
 }
