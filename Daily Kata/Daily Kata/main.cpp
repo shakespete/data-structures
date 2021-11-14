@@ -4,89 +4,55 @@
 
 using namespace std;
 
-class TrieNode {
+class DynamicStack {
+    enum { DEF_CAP = 3 };
 public:
-    int key;
-    bool isEnd;
-    bool isDeleted;
-    TrieNode **children;
-    TrieNode() {
-        key = 0;
-        isEnd = false;
-        isDeleted = false;
-        children = new TrieNode *[26];
-        for (int i = 0; i < 26; ++i) {
-            children[i] = nullptr;
-        }
-    }
+    DynamicStack(int cap = DEF_CAP);
+    ~DynamicStack();
+    int size() const;
+    bool empty() const;
+    int top() const;
+    void push(int e);
+    void pop();
+private:
+    int *S;
+    int t;
+    int capacity;
 };
 
-class Trie {
-public:
-    Trie();
-    int find(string word);
-    void insert(string word, int k);
-    void remove(string word);
-    TrieNode *root;
-};
-
-Trie::Trie() { root = new TrieNode(); }
-int Trie::find(string word) {
-    TrieNode *crawler = root;
-    
-    int idx = 0;
-    for (auto c : word) {
-        idx = c - 'a'; // case sensitive
-        if (crawler->children[idx] == nullptr) return -1;
-        
-        crawler = crawler->children[idx];
+DynamicStack::DynamicStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { };
+DynamicStack::~DynamicStack() { while (!empty()) pop(); }
+int DynamicStack::size() const { return t + 1; }
+bool DynamicStack::empty() const { return size() == 0; }
+int DynamicStack::top() const { return empty() ? -1 : S[t]; }
+void DynamicStack::push(int e) {
+    if (size() == capacity) {
+        int *T = new int[capacity * 2];
+        for (int i = 0; i < capacity; ++i) T[i] = S[i];
+        S = T;
+        capacity *= 2;
     }
-    
-    if (crawler->isEnd && !crawler->isDeleted) return crawler->key;
-    return -1;
+    S[++t] = e;
 }
-void Trie::insert(string word, int k) {
-    TrieNode *crawler = root;
-    
-    int idx = 0;
-    for (auto c : word) {
-        idx = c - 'a'; // case sensitive
-        if (crawler->children[idx] == nullptr)
-            crawler->children[idx] = new TrieNode();
-        
-        crawler = crawler->children[idx];
-    }
-    
-    crawler->isEnd = true;
-    crawler->key = k;
-}
-void Trie::remove(string word) {
-    TrieNode *crawler = root;
-    
-    int idx = 0;
-    for (auto c : word) {
-        idx = c - 'a'; // case sensitive
-        if (crawler->children[idx] == nullptr) return;
-        crawler = crawler->children[idx];
-    }
-    
-    if (crawler->isEnd) crawler->isDeleted = true;
-}
+void DynamicStack::pop() { if (!empty()) --t; }
 
 int main() {
-    int uniqId = 0;
+    DynamicStack *st = new DynamicStack();
+    st->push(10);
+    st->push(9);
+    st->push(8);
+    st->push(7);
+    st->push(6);
+    st->push(5);
+    st->push(4);
+    st->push(3);
+    st->push(2);
+    st->push(1);
     
-    Trie* t = new Trie();
-    t->insert("sing", ++uniqId);
-    t->insert("sip", ++uniqId);
-    t->insert("ask", ++uniqId);
-    
-    printf("%d\n", t->find("sing"));
-    printf("%d\n", t->find("sip"));
-    printf("%d\n", t->find("ask"));
-    printf("%d\n", t->find("sin"));
-    printf("%d\n", t->find("as"));
-    t->remove("sing");
-    printf("%d\n", t->find("sing"));
+    while (!st->empty()) {
+        printf("%d ", st->top());
+        st->pop();
+    }
+    printf("\nFIN\n");
     return 0;
 }
