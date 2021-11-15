@@ -1,58 +1,90 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include <string>
+#include <vector>
 
 using namespace std;
 
-class DynamicStack {
-    enum { DEF_CAP = 3 };
+class MaxHeap {
 public:
-    DynamicStack(int cap = DEF_CAP);
-    ~DynamicStack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(int e);
-    void pop();
-private:
-    int *S;
-    int t;
-    int capacity;
+    MaxHeap(vector<int> &arr);
+    vector<int> heap;
+    vector<int> buildMaxHeap(vector<int> &arr);
+    void maxHeapify(int i, int heapSize, vector<int> &arr);
+    void insert(int val);
+    int extractMax();
 };
 
-DynamicStack::DynamicStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { };
-DynamicStack::~DynamicStack() { while (!empty()) pop(); }
-int DynamicStack::size() const { return t + 1; }
-bool DynamicStack::empty() const { return size() == 0; }
-int DynamicStack::top() const { return empty() ? -1 : S[t]; }
-void DynamicStack::push(int e) {
-    if (size() == capacity) {
-        int *T = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) T[i] = S[i];
-        S = T;
-        capacity *= 2;
-    }
-    S[++t] = e;
+MaxHeap::MaxHeap(vector<int> &arr) { heap = buildMaxHeap(arr); }
+vector<int> MaxHeap::buildMaxHeap(vector<int> &arr) {
+    int heapSize = (int)arr.size();
+    int parentIdx = heapSize / 2 - 1;
+    for (int i = parentIdx; i >= 0; --i) maxHeapify(i, heapSize, arr);
+    return arr;
 }
-void DynamicStack::pop() { if (!empty()) --t; }
+void MaxHeap::maxHeapify(int i, int heapSize, vector<int> &arr) {
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    
+    int largest;
+    if (l < heapSize && arr[l] > arr[i]) largest = l;
+    else largest = i;
+    
+    if (r < heapSize && arr[r] > arr[largest]) largest = r;
+    
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+        maxHeapify(largest, heapSize, arr);
+    }
+}
+void MaxHeap::insert(int val) {
+    heap.push_back(val);
+    int heapSize = (int)heap.size();
+    int current = heapSize - 1;
+    int parent = heapSize / 2 - 1;
+    
+    while (current > 0 && heap[current] > heap[parent]) {
+        swap(heap[current], heap[parent]);
+        current = parent;
+        parent = (current - 1) / 2;
+    }
+}
+int MaxHeap::extractMax() {
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
+    
+    
+    int max = heap[0];
+    heap[0] = heap[heapSize - 1];
+    heap.pop_back();
+    maxHeapify(0, heapSize, heap);
+    return max;
+}
 
 int main() {
-    DynamicStack *st = new DynamicStack();
-    st->push(10);
-    st->push(9);
-    st->push(8);
-    st->push(7);
-    st->push(6);
-    st->push(5);
-    st->push(4);
-    st->push(3);
-    st->push(2);
-    st->push(1);
+    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
+    MaxHeap maxHeap(arr);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    while (!st->empty()) {
-        printf("%d ", st->top());
-        st->pop();
-    }
+    printf("\nInsert: 22\n");
+    maxHeap.insert(22);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nInsert: 18\n");
+    maxHeap.insert(18);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
     printf("\nFIN\n");
     return 0;
 }
