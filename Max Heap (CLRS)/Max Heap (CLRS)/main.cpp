@@ -48,7 +48,7 @@ void MaxHeap::insert(int val) {
     int current = heapSize - 1;
     int parent = heapSize / 2 - 1;
     
-    while (current >= 0 && heap[current] > heap[parent]) {
+    while (current > 0 && heap[current] > heap[parent]) {
         swap(heap[current], heap[parent]);
         current = parent;
         parent = (current - 1) / 2;
@@ -61,7 +61,7 @@ int MaxHeap::extractMax() {
     int max = heap[0];
     heap[0] = heap[heapSize - 1];
     heap.pop_back();
-    maxHeapify(0, heap, heapSize);
+    maxHeapify(0, heap, heapSize - 1);
     
     return max;
 }
