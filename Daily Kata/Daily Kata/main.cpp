@@ -1,89 +1,98 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <vector>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
-class MaxHeap {
-public:
-    MaxHeap(vector<int> &arr);
-    vector<int> heap;
-    vector<int> buildMaxHeap(vector<int> &arr);
-    void maxHeapify(int i, vector<int> &arr, int heapSize);
-    void insert(int e);
-    int extractMax();
+struct Node {
+    string val;
+    Node *next;
 };
 
-MaxHeap::MaxHeap(vector<int> &arr) { heap = buildMaxHeap(arr); }
-vector<int> MaxHeap::buildMaxHeap(vector<int> &arr) {
-    int heapSize = (int)arr.size();
-    int parentIdx = heapSize / 2 - 1;
-    for (int i = parentIdx; i >= 0; --i) maxHeapify(i, arr, heapSize);
-    return arr;
-}
-void MaxHeap::maxHeapify(int i, vector<int> &arr, int heapSize) {
-    int l = 2 * i + 1;
-    int r = 2 * i + 2;
-    
-    int largest;
-    if (l < heapSize && arr[l] > arr[i]) largest = l;
-    else largest = i;
-    
-    if (r < heapSize && arr[r] > arr[largest]) largest = r;
-    
-    if (largest != i) {
-        swap(arr[i], arr[largest]);
-        maxHeapify(largest, arr, heapSize);
+class CLL {
+public:
+    CLL();
+    ~CLL();
+    bool empty() const;
+    Node *front() const;
+    void advance();
+    void add(string s);
+    void remove();
+private:
+    Node *cursor;
+};
+
+CLL::CLL() : cursor(NULL) {}
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == NULL; }
+Node *CLL::front() const { return empty() ? nullptr : cursor->next; }
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::add(string s) {
+    Node *u = new Node();
+    u->val = s;
+    if (empty()) {
+        u->next = u;
+        cursor = u;
+    } else {
+        u->next = cursor->next;
+        cursor->next = u;
     }
 }
-void MaxHeap::insert(int e) {
-    heap.push_back(e);
-    int heapSize = (int)heap.size();
-    int parent = heapSize / 2 - 1;
-    int current = heapSize - 1;
-    
-    while (current > 0 && heap[current] > heap[parent]) {
-        swap(heap[current], heap[parent]);
-        current = parent;
-        parent = (current - 1) / 2;
+void CLL::remove() {
+    if (!empty()) {
+        Node *old = cursor->next;
+        if (old == cursor) cursor = nullptr;
+        else cursor->next = old->next;
+        delete old;
     }
 }
-int MaxHeap::extractMax() {
-    int heapSize = (int)heap.size();
-    if (heapSize == 0) return -1;
-    
-    int max = heap[0];
-    heap[0] = heap[heapSize - 1];
-    heap.pop_back();
-    maxHeapify(0, heap, heapSize - 1);
-    
-    return max;
+
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node *front() const;
+    void push(string s);
+    void pop();
+private:
+    CLL CL;
+    int n;
+};
+
+Queue::Queue() : CL(), n(0) {}
+Queue::~Queue() { while (!empty()) pop(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node *Queue::front() const { return empty() ? nullptr : CL.front(); }
+void Queue::push(string s) {
+    CL.add(s);
+    CL.advance();
+    n++;
+}
+void Queue::pop() {
+    if (!empty()) {
+        CL.remove();
+        n--;
+    }
 }
 
 int main() {
-    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
-    MaxHeap maxHeap(arr);
-    for (int i : maxHeap.heap) printf("%d ", i);
+    Queue *q = new Queue();
+    q->push("Bermuda,");
+    q->push("Bahama,");
+    q->push("come on");
+    q->push("pretty mama");
+    q->push("\nKey Largo,");
+    q->push("Montego,");
+    q->push("baby why don't we go,");
+    q->push("Jamaica");
     
-    printf("\nInsert: 22\n");
-    maxHeap.insert(22);
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nInsert: 18\n");
-    maxHeap.insert(18);
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->pop();
+    }
     printf("\nFIN\n");
     return 0;
 }
