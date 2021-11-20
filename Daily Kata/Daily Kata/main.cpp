@@ -4,95 +4,117 @@
 
 using namespace std;
 
-struct Node {
-    string val;
-    Node *next;
-};
-
-class CLL {
+class Node {
 public:
-    CLL();
-    ~CLL();
-    bool empty() const;
-    Node *front() const;
-    void advance();
-    void add(string s);
-    void remove();
-private:
-    Node *cursor;
+    int val;
+    Node *left;
+    Node *right;
+    Node *parent;
+    Node (int e) {
+        val = e;
+        left = nullptr;
+        right = nullptr;
+        parent = nullptr;
+    }
 };
 
-CLL::CLL() : cursor(NULL) {}
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == NULL; }
-Node *CLL::front() const { return empty() ? nullptr : cursor->next; }
-void CLL::advance() { if (!empty()) cursor = cursor->next; }
-void CLL::add(string s) {
-    Node *u = new Node();
-    u->val = s;
-    if (empty()) {
-        u->next = u;
-        cursor = u;
-    } else {
-        u->next = cursor->next;
-        cursor->next = u;
+class BST {
+public:
+    BST();
+    Node *root;
+    Node *treeSearch(Node *x, int e);
+    Node *treeMin(Node *node);
+    void insert(int e);
+    void remove(int e);
+    void transplant(Node *u, Node *v);
+    void inorderTraversal(Node *x);
+};
+
+BST::BST() : root(nullptr) { }
+Node *BST::treeSearch(Node *x, int e) {
+    while (x && e != x->val) {
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    return x;
+}
+Node *BST::treeMin(Node *x) {
+    while (x && x->left) x = x->left;
+    return x;
+}
+void BST::insert(int e) {
+    Node *x = root;
+    Node *y = nullptr;
+    Node *z = new Node(e);
+    
+    while (x) {
+        y = x;
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    
+    z->parent = y;
+    if (!y) root = z;
+    else if (e < y->val) y->left = z;
+    else y->right = z;
+}
+void BST::remove(int e) {
+    Node *z = treeSearch(root, e);
+    
+    if (!z->left) transplant(z, z->right);
+    else if (!z->right) transplant(z, z->left);
+    else {
+        Node *y = treeMin(z->right);
+        
+        if (y->parent != z) {
+            transplant(y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+        
+        transplant(z, y);
+        y->left = z->left;
+        y->left->parent = y;
     }
 }
-void CLL::remove() {
-    if (!empty()) {
-        Node *old = cursor->next;
-        if (old == cursor) cursor = nullptr;
-        else cursor->next = old->next;
-        delete old;
-    }
+void BST::transplant(Node *u, Node *v) {
+    if (!u->parent) root = v;
+    else if (u->parent->left == u) u->parent->left = v;
+    else u->parent->right = v;
+    
+    if (v) v->parent = u->parent;
 }
-
-class Queue {
-public:
-    Queue();
-    ~Queue();
-    int size() const;
-    bool empty() const;
-    Node *front() const;
-    void push(string s);
-    void pop();
-private:
-    CLL CL;
-    int n;
-};
-
-Queue::Queue() : CL(), n(0) {}
-Queue::~Queue() { while (!empty()) pop(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node *Queue::front() const { return empty() ? nullptr : CL.front(); }
-void Queue::push(string s) {
-    CL.add(s);
-    CL.advance();
-    n++;
-}
-void Queue::pop() {
-    if (!empty()) {
-        CL.remove();
-        n--;
+void BST::inorderTraversal(Node *x) {
+    if (x) {
+        inorderTraversal(x->left);
+        printf("%d ", x->val);
+        inorderTraversal(x->right);
     }
 }
 
 int main() {
-    Queue *q = new Queue();
-    q->push("Bermuda,");
-    q->push("Bahama,");
-    q->push("come on");
-    q->push("pretty mama");
-    q->push("\nKey Largo,");
-    q->push("Montego,");
-    q->push("baby why don't we go,");
-    q->push("Jamaica");
+    BST *bst = new BST();
+    bst->insert(12);
+    bst->insert(5);
+    bst->insert(18);
+    bst->insert(2);
+    bst->insert(9);
+    bst->insert(15);
+    bst->insert(19);
+    bst->insert(13);
+    bst->insert(17);
     
-    while (!q->empty()) {
-        cout << q->front()->val << " ";
-        q->pop();
-    }
+    bst->inorderTraversal(bst->root);
+    printf("\nRemove 12\n");
+    bst->remove(12);
+    bst->inorderTraversal(bst->root);
+    bst->remove(17);
+    printf("\nRemove 17\n");
+    bst->inorderTraversal(bst->root);
+    bst->remove(18);
+    printf("\nRemove 18\n");
+    bst->inorderTraversal(bst->root);
+    
     printf("\nFIN\n");
     return 0;
 }
