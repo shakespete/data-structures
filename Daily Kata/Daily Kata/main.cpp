@@ -5,80 +5,114 @@
 using namespace std;
 
 struct Node {
-    string val;
-    Node* prev;
-    Node* next;
+    int val;
+    Node* left;
+    Node* right;
+    Node* parent;
+    Node(int e) {
+        val = e;
+        left = nullptr;
+        right = nullptr;
+        parent = nullptr;
+    }
 };
 
-class DLL {
+class BST {
 public:
-    DLL();
-    ~DLL();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, string s);
-    void addFront(string s);
-    void addBack(string s);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
-private:
-    Node* head;
-    Node* tail;
+    BST();
+    Node* root;
+    Node* treeSearch(Node* x, int e);
+    Node* treeMin(Node* x);
+    void insert(int e);
+    void remove(int e);
+    void transplant(Node* u, Node* v);
+    void inorderTraversal(Node* x);
 };
 
-DLL::DLL() {
-    head = new Node;
-    tail = new Node;
-    head->next = tail;
-    tail->prev = head;
-    head->val = "";
-    tail->val = "";
+BST::BST() : root(nullptr) {}
+Node* BST::treeSearch(Node* x, int e) {
+    while (x && e != x->val) {
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    return x;
 }
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? nullptr : head->next; }
-Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
-void DLL::add(Node* v, string s) {
-    Node* u = new Node;
-    u->val = s;
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
+Node* BST::treeMin(Node* x) {
+    while (x->left) x = x->left;
+    return x;
 }
-void DLL::addFront(string s) { add(head->next, s); }
-void DLL::addBack(string s) { add(tail, s); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
+void BST::insert(int e) {
+    Node* x = root;
+    Node* y = nullptr;
+    Node* z = new Node(e);
+    
+    while (x) {
+        y = x;
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    
+    z->parent = y;
+    if (!y) root = z;
+    else if (e < y->val) y->left = z;
+    else y->right = z;
+}
+void BST::remove(int e) {
+    Node* z = treeSearch(root, e);
+    
+    if (!z->left) transplant(z, z->right);
+    else if (!z->right) transplant(z, z->left);
+    else {
+        Node* y = treeMin(z->right);
+        
+        if (y->parent != z) {
+            transplant(y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+        
+        transplant(z, y);
+        y->left = z->left;
+        y->left->parent = y;
     }
 }
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+void BST::transplant(Node* u, Node* v) {
+    if (!u->parent) root = v;
+    else if (u->parent->left == u) u->parent->left = v;
+    else u->parent->right = v;
+    
+    if (v) v->parent = u->parent;
+}
+void BST::inorderTraversal(Node* x) {
+    if (x) {
+        inorderTraversal(x->left);
+        cout << x->val << " ";
+        inorderTraversal(x->right);
+    }
+}
 
 int main() {
-
-    DLL* dlist = new DLL();
-    dlist->addBack("Afternoon delight,");
-    dlist->addBack("cocktails and");
-    dlist->addBack("moonlit nights");
-    dlist->addBack("\nThat dreamy look");
-    dlist->addBack("in your eye,");
-    dlist->addBack("give me a tropical");
-    dlist->addBack("contact high");
-    dlist->addBack("\nWay down");
-    dlist->addBack("in Kokomo");
+    BST *bst = new BST();
+    bst->insert(12);
+    bst->insert(5);
+    bst->insert(18);
+    bst->insert(2);
+    bst->insert(9);
+    bst->insert(15);
+    bst->insert(19);
+    bst->insert(13);
+    bst->insert(17);
     
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
-    }
+    bst->inorderTraversal(bst->root);
+    printf("\nRemove 12\n");
+    bst->remove(12);
+    bst->inorderTraversal(bst->root);
+    bst->remove(17);
+    printf("\nRemove 17\n");
+    bst->inorderTraversal(bst->root);
+    bst->insert(23);
+    printf("\nInsert 23\n");
+    bst->inorderTraversal(bst->root);
     
     printf("\nFIN\n");
     return 0;
