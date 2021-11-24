@@ -1,118 +1,90 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <string>
+#include <vector>
 
 using namespace std;
 
-struct Node {
-    int val;
-    Node* left;
-    Node* right;
-    Node* parent;
-    Node(int e) {
-        val = e;
-        left = nullptr;
-        right = nullptr;
-        parent = nullptr;
-    }
-};
-
-class BST {
+class MaxHeap {
 public:
-    BST();
-    Node* root;
-    Node* treeSearch(Node* x, int e);
-    Node* treeMin(Node* x);
+    MaxHeap(vector<int>& vec);
+    vector<int> heap;
+    vector<int> buildMaxHeap(vector<int>& vec);
+    void maxHeapify(int i, vector<int>& vec, int heapSize);
     void insert(int e);
-    void remove(int e);
-    void transplant(Node* u, Node* v);
-    void inorderTraversal(Node* x);
+    int extractMax();
 };
 
-BST::BST() : root(nullptr) {}
-Node* BST::treeSearch(Node* x, int e) {
-    while (x && e != x->val) {
-        if (e < x->val) x = x->left;
-        else x = x->right;
-    }
-    return x;
+MaxHeap::MaxHeap(vector<int>& vec) { heap = buildMaxHeap(vec); }
+vector<int> MaxHeap::buildMaxHeap(vector<int>& vec) {
+    int heapSize = (int)vec.size();
+    int parent = heapSize / 2 - 1;
+    for (int i = parent; i >= 0; --i)
+        maxHeapify(i, vec, heapSize);
+    return vec;
 }
-Node* BST::treeMin(Node* x) {
-    while (x->left) x = x->left;
-    return x;
-}
-void BST::insert(int e) {
-    Node* x = root;
-    Node* y = nullptr;
-    Node* z = new Node(e);
+void MaxHeap::maxHeapify(int i, vector<int>& vec, int heapSize) {
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
     
-    while (x) {
-        y = x;
-        if (e < x->val) x = x->left;
-        else x = x->right;
-    }
+    int largest;
+    if (l < heapSize && vec[l] > vec[i]) largest = l;
+    else largest = i;
     
-    z->parent = y;
-    if (!y) root = z;
-    else if (e < y->val) y->left = z;
-    else y->right = z;
-}
-void BST::remove(int e) {
-    Node* z = treeSearch(root, e);
+    if (r < heapSize && vec[r] > vec[largest]) largest = r;
     
-    if (!z->left) transplant(z, z->right);
-    else if (!z->right) transplant(z, z->left);
-    else {
-        Node* y = treeMin(z->right);
-        
-        if (y->parent != z) {
-            transplant(y, y->right);
-            y->right = z->right;
-            y->right->parent = y;
-        }
-        
-        transplant(z, y);
-        y->left = z->left;
-        y->left->parent = y;
+    if (largest != i) {
+        swap(vec[i], vec[largest]);
+        maxHeapify(largest, vec, heapSize);
     }
 }
-void BST::transplant(Node* u, Node* v) {
-    if (!u->parent) root = v;
-    else if (u->parent->left == u) u->parent->left = v;
-    else u->parent->right = v;
+void MaxHeap::insert(int e) {
+    heap.push_back(e);
+    int heapSize = (int)heap.size();
+    int parent = heapSize / 2 - 1;
+    int current = heapSize - 1;
     
-    if (v) v->parent = u->parent;
-}
-void BST::inorderTraversal(Node* x) {
-    if (x) {
-        inorderTraversal(x->left);
-        cout << x->val << " ";
-        inorderTraversal(x->right);
+    while (current > 0 && heap[current] > heap[parent]) {
+        swap(heap[current], heap[parent]);
+        current = parent;
+        parent = (current - 1) / 2;
     }
+}
+int MaxHeap::extractMax() {
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
+    
+    int max = heap[0];
+    heap[0] = heap[heapSize - 1];
+    heap.pop_back();
+    maxHeapify(0, heap, heapSize - 1);
+    return max;
 }
 
 int main() {
-    BST *bst = new BST();
-    bst->insert(12);
-    bst->insert(5);
-    bst->insert(18);
-    bst->insert(2);
-    bst->insert(9);
-    bst->insert(15);
-    bst->insert(19);
-    bst->insert(13);
-    bst->insert(17);
+    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
+    MaxHeap maxHeap(arr);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    bst->inorderTraversal(bst->root);
-    printf("\nRemove 12\n");
-    bst->remove(12);
-    bst->inorderTraversal(bst->root);
-    bst->remove(17);
-    printf("\nRemove 17\n");
-    bst->inorderTraversal(bst->root);
-    bst->insert(23);
-    printf("\nInsert 23\n");
-    bst->inorderTraversal(bst->root);
+    printf("\nInsert: 22\n");
+    maxHeap.insert(22);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nInsert: 18\n");
+    maxHeap.insert(18);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
     
     printf("\nFIN\n");
     return 0;
