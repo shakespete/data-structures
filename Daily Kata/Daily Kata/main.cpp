@@ -1,59 +1,116 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <string>
+#include <vector>
 
 using namespace std;
 
-class Node {
-public:
-    Node* next;
-    string val;
-    Node(string s) { val = s; }
+struct Node {
+    int val;
+    Node* left;
+    Node* right;
+    Node* parent;
+    Node(int e) {
+        val = e;
+        left = nullptr;
+        right = nullptr;
+        parent = nullptr;
+    }
 };
 
-class LL {
+class BST {
 public:
-    LL();
-    ~LL();
-    bool empty() const;
-    Node* front() const;
-    void add(string s);
-    void remove();
-private:
-    Node* head;
+    BST();
+    Node* root;
+    Node* treeSearch(Node* x, int e);
+    Node* treeMin(Node* x);
+    void insert(int e);
+    void remove(int e);
+    void transplant(Node* u, Node* v);
+    void inorderTraversal(Node* x);
 };
 
-LL::LL() : head(nullptr) { }
-LL::~LL() { while (!empty()) remove(); }
-bool LL::empty() const { return head == nullptr; }
-Node* LL::front() const { return empty() ? nullptr : head; }
-void LL::add(string s) {
-    Node* u = new Node(s);
-    u->next = head;
-    head = u;
+BST::BST() : root(nullptr) { }
+Node* BST::treeSearch(Node* x, int e) {
+    while (x && e != x->val) {
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    return x;
 }
-void LL::remove() {
-    if (!empty()) {
-        Node* old = head;
-        head = old->next;
-        delete old;
+Node* BST::treeMin(Node* x) {
+    while (x->left) x = x->left;
+    return x;
+}
+void BST::insert(int e) {
+    Node* x = root;
+    Node* y = nullptr;
+    Node* z = new Node(e);
+    
+    while (x) {
+        y = x;
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    
+    z->parent = y;
+    if (!y) root = z;
+    else if (e < y->val) y->left = z;
+    else y->right = z;
+}
+void BST::remove(int e) {
+    Node* z = treeSearch(root, e);
+    
+    if (!z->left) transplant(z, z->right);
+    else if (!z->right) transplant(z, z->left);
+    else {
+        Node* y = treeMin(z->right);
+        
+        if (y->parent != z) {
+            transplant(y, y->right);
+            y->right = z->right;
+            z->right->parent = y;
+        }
+        
+        transplant(z, y);
+        y->left = z->left;
+        z->left->parent = y;
+    }
+}
+void BST::transplant(Node* u, Node* v) {
+    if (!u->parent) root = v;
+    else if (u->parent->left == u) u->parent->left = v;
+    else  u->parent->right = v;
+    
+    if (v) v->parent = u->parent;
+}
+void BST::inorderTraversal(Node* x) {
+    if (x) {
+        inorderTraversal(x->left);
+        cout << x->val << " ";
+        inorderTraversal(x->right);
     }
 }
 
 
 int main() {
-    LL* ll = new LL();
+    BST *bst = new BST();
+    bst->insert(12);
+    bst->insert(5);
+    bst->insert(18);
+    bst->insert(2);
+    bst->insert(9);
+    bst->insert(15);
+    bst->insert(19);
+    bst->insert(13);
+    bst->insert(17);
     
-    ll->add("the road");
-    ll->add("it's the end of");
-    ll->add("a stone,");
-    ll->add("A stick,");
-    
-    while (!ll->empty()) {
-        cout << ll->front()->val << " ";
-        ll->remove();
-    }
-    
+    bst->inorderTraversal(bst->root);
+    printf("\nRemove 12\n");
+    bst->remove(12);
+    bst->inorderTraversal(bst->root);
+    bst->remove(17);
+    printf("\nRemove 17\n");
+    bst->inorderTraversal(bst->root);
     printf("\nFIN\n");
     return 0;
 }
