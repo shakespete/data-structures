@@ -13,9 +13,11 @@ public:
     BST(int e);
     BST* treeMin(BST* x);
     BST* treeSearch(int e);
-    BST*  insert(int e);
-    BST*  remove(int e, BST* parent);
+    BST* insert(int e);
+    BST* remove(int e, BST* parent);
     void inorderTraversal();
+    void preorderTraversal();
+    void postorderTraversal();
 };
 
 BST::BST(int e) {
@@ -29,7 +31,7 @@ BST* BST::treeMin(BST* x) {
 }
 BST* BST::treeSearch(int e) {
     BST* x = this;
-    while (x && x->val != e) {
+    while (x && e != x->val) {
         if (e < x->val) x = x->left;
         else x = x->right;
     }
@@ -37,7 +39,7 @@ BST* BST::treeSearch(int e) {
 }
 BST* BST::insert(int e) {
     BST* x = this;
-    while (x) {
+    while (true) {
         if (e < x->val) {
             if (x->left) x = x->left;
             else {
@@ -58,7 +60,7 @@ BST* BST::insert(int e) {
 }
 BST* BST::remove(int e, BST* parent) {
     BST* x = this;
-    while (true) {
+    while (x) {
         if (e < x->val) {
             parent = x;
             x = x->left;
@@ -108,9 +110,42 @@ void BST::inorderTraversal() {
         cout << x->val << " ";
         x = x->right;
     }
-    
 }
-
+void BST::preorderTraversal() {
+    BST* x = this;
+    stack<BST*> st;
+    
+    st.push(x);
+    while (!st.empty()) {
+        x = st.top();
+        st.pop();
+        
+        cout << x->val << " ";
+        if (x->right) st.push(x->right);
+        if (x->left) st.push(x->left);
+    }
+}
+void BST::postorderTraversal() {
+    BST* x = this;
+    stack<BST*> st1, st2;
+    
+    st1.push(x);
+    
+    while (!st1.empty()) {
+        x = st1.top();
+        st1.pop();
+        st2.push(x);
+        
+        if (x->left) st1.push(x->left);
+        if (x->right) st1.push(x->right);
+    }
+    
+    while (!st2.empty()) {
+        x = st2.top();
+        st2.pop();
+        cout << x->val << " ";
+    }
+}
 
 int main() {
     BST *root = new BST(10);
@@ -122,9 +157,13 @@ int main() {
     root->right->left = new BST(13);
     root->right->left->right = new BST(14);
     root->right->right = new BST(22);
-    
+
     cout << "Inorder: ";
     root->inorderTraversal();
+    cout << "\nPreorder: ";
+    root->preorderTraversal();
+    cout << "\nPostorder: ";
+    root->postorderTraversal();
     printf("\nFIN\n");
     return 0;
 }
