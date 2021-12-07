@@ -1,188 +1,162 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <stack>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-class BST {
-public:
-    int val;
-    BST* left;
-    BST* right;
-    BST(int val);
-    BST* treeMin(BST* x);
-    BST* treeSearch(int e);
-    BST* insert(int e);
-    BST* remove(int e, BST* parent);
-    void inorderTraversal();
-    void preorderTraversal();
-    void postorderTraversal();
+struct Node {
+    string val;
+    Node* prev;
+    Node* next;
 };
 
-BST::BST(int e) {
-    val = e;
-    left = nullptr;
-    right = nullptr;
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, string s);
+    void addFront(string s);
+    void addBack(string s);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+
+DLL::DLL() {
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+    head->val = "";
+    tail->val = "";
 }
-BST* BST::treeMin(BST* x) {
-    while (x->left) x = x->left;
-    return x;
-}
-BST* BST::treeSearch(int e) {
-    BST* x = this;
-    while (x && e != x->val) {
-        if (e < x->val) x = x->left;
-        else x = x->right;
-    }
-    return x;
-}
-BST* BST::insert(int e) {
-    BST* x = this;
-    while (true) {
-        if (e < x->val) {
-            if (x->left) x = x->left;
-            else {
-                BST* node = new BST(e);
-                x->left = node;
-                break;
-            }
-        } else {
-            if (x->right) x = x->right;
-            else {
-                BST* node = new BST(e);
-                x->right = node;
-                break;
-            }
-        }
-    }
-    return x;
-}
-BST* BST::remove(int e, BST* parent = nullptr) {
-    BST* x = this;
-    while (x) {
-        if (e < x->val) {
-            parent = x;
-            x = x->left;
-        } else if (e > x->val) {
-            parent = x;
-            x = x->right;
-        } else {
-            if (x->left && x->right) {
-                BST* min = treeMin(x->right);
-                x->val = min->val;
-                x->right->remove(min->val, x);
-            } else if (!parent) {
-                if (x->left) {
-                    x->val = x->left->val;
-                    x->right = x->left->right;
-                    x->left = x->left->left;
-                } else if (x->right) {
-                    x->val = x->right->val;
-                    x->left = x->right->left;
-                    x->right = x->right->right;
-                } else {
-                    x = nullptr;
-                }
-            } else if (parent->left == x) {
-                parent->left = x->left ? x->left : x->right;
-            } else if (parent->right == x) {
-                parent->right = x->left ? x->left : x->right;
-            }
-            break;
-        }
-    }
-    return x;
-}
-void BST::inorderTraversal() {
-    BST* x = this;
-    stack<BST*> st;
+DLL::~DLL() { while (!empty()) removeBack(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
+void DLL::add(Node* v, string s) {
+    Node* u = new Node;
+    u->val = s;
     
-    while (x || !st.empty()) {
-        while (x) {
-            st.push(x);
-            x = x->left;
-        }
-        
-        x = st.top();
-        st.pop();
-        
-        cout << x->val << " ";
-        x = x->right;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(string s) { add(head->next, s); }
+void DLL::addBack(string s) { add(tail, s); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
-void BST::preorderTraversal() {
-    BST* x = this;
-    stack<BST*> st;
-    
-    st.push(x);
-    
-    while (!st.empty()) {
-        x = st.top();
-        st.pop();
-        
-        cout << x->val << " ";
-        
-        if (x->right) st.push(x->right);
-        if (x->left) st.push(x->left);
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
+
+bool strComp(string a, string b) {
+    int i = 0;
+    while (a[i] == b[i]) {
+        if (a[i] == '\0') return true;
+        ++i;
     }
+    return false;
 }
-void BST::postorderTraversal() {
-    BST* x = this;
-    stack<BST*> s1;
-    stack<BST*> s2;
-    
-    s1.push(x);
-    
-    while (!s1.empty()) {
-        x = s1.top();
-        s1.pop();
-        s2.push(x);
-        
-        
-        if (x->left) s1.push(x->left);
-        if (x->right) s1.push(x->right);
+
+
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    void remove(string s);
+    Node* retrieve(string s);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    cout << s << ": " << hashVal << "\n";
+    HM[hashVal].addBack(s);
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
     
-    while (!s2.empty()) {
-        x = s2.top();
-        s2.pop();
-        
-        cout << x->val << " ";
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (strComp(node->val, s)) return node;
+        node = node->next;
     }
+    return nullptr;
 }
 
 int main() {
-    BST *root = new BST(10);
-    root->left = new BST(5);
-    root->left->left = new BST(2);
-    root->left->left->left = new BST(1);
-    root->left->right = new BST(5);
-    root->right = new BST(15);
-    root->right->left = new BST(13);
-    root->right->left->right = new BST(14);
-    root->right->right = new BST(22);
     
-    cout << "Inorder: ";
-    root->inorderTraversal();
-    cout << "\n";
-    cout << "Preorder: ";
-    root->preorderTraversal();
-    cout << "\n";
-    cout << "Postorder: ";
-    root->postorderTraversal();
-    cout << "\n";
+    HashMap* hm = new HashMap();
+    hm->insert("is");
+    hm->insert("misfortune");
+    hm->insert("school");
+    hm->insert("The");
+    hm->insert("good");
+    hm->insert("of");
+    hm->insert("school");
+    hm->insert("a");
     
+    hm->insert("A stick,");
+    hm->insert("It's the rest");
+    hm->insert("of a stump,");
+    hm->insert("it's a little alone");
+    hm->insert("of the road");
+    hm->insert("it's the end");
+    hm->insert("a stone,");
+
+    cout << hm->retrieve("The")->val << " ";
+    cout << hm->retrieve("school")->val << " ";
+    cout << hm->retrieve("of")->val << " ";
+    cout << hm->retrieve("misfortune")->val << " ";
+    cout << hm->retrieve("is")->val << " ";
+    cout << hm->retrieve("a")->val << " ";
+    cout << hm->retrieve("good")->val << " ";
+    cout << hm->retrieve("school")->val << "\n";
     
-    root->insert(12);
-    root->inorderTraversal();
-    cout << "\n";
+    cout << hm->retrieve("A stick,")->val << " ";
+    cout << hm->retrieve("a stone,")->val << " ";
+    cout << hm->retrieve("it's the end")->val << " ";
+    cout << hm->retrieve("of the road")->val << "\n";
+    cout << hm->retrieve("It's the rest")->val << " ";
+    cout << hm->retrieve("of a stump,")->val << " ";
+    cout << hm->retrieve("it's a little alone")->val << " ";
     
-    root->remove(1);
-    root->remove(14);
-    root->remove(12);
-    root->inorderTraversal();
-    cout << "\n";
     printf("\nFIN\n");
     return 0;
 }
