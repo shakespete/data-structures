@@ -1,182 +1,65 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <stack>
 #include <vector>
 
 using namespace std;
 
-class BST {
+class DynamicStack {
+    enum { DEF_CAP = 3 };
 public:
-    int val;
-    BST* left;
-    BST* right;
-    BST(int e);
-    BST* treeMin(BST* x);
-    BST* treeSearch(int e);
-    BST* insert(int e);
-    BST* remove(int e, BST* parent);
-    void inorderTraversal();
-    void preorderTraversal();
-    void postorderTraversal();
+    DynamicStack(int cap = DEF_CAP);
+    ~DynamicStack();
+    int size() const;
+    bool empty() const;
+    int top() const;
+    void push(int e);
+    void pop();
+private:
+    int* S;
+    int t;
+    int capacity;
 };
 
-BST::BST(int e) {
-    val = e;
-    left = nullptr;
-    right = nullptr;
-}
-BST* BST::treeMin(BST* x) {
-    while (x->left) x = x->left;
-    return x;
-}
-BST* BST::treeSearch(int e) {
-    BST* x = this;
-    while (x && e != x->val) {
-        if (e < x->val) x = x->left;
-        else x = x->right;
+DynamicStack::DynamicStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { }
+DynamicStack::~DynamicStack() { while (!empty()) pop(); }
+int DynamicStack::size() const { return t + 1; }
+bool DynamicStack::empty() const { return size() == 0; }
+int DynamicStack::top() const { return empty() ? -1 : S[t]; }
+void DynamicStack::push(int e) {
+    if (size() == capacity) {
+        int* T = new int[capacity * 2];
+        for (int i = 0; i < capacity; ++i) T[i] = S[i];
+        capacity *= 2;
+        S = T;
+        delete[] T;
     }
-    return x;
+    S[++t] = e;
 }
-BST* BST::insert(int e) {
-    BST* x = this;
-    while (true) {
-        if (e < x->val) {
-            if (x->left) x = x->left;
-            else {
-                BST* node = new BST(e);
-                x->left = node;
-                break;
-            }
-        } else {
-            if (x->right) x = x->right;
-            else {
-                BST* node = new BST(e);
-                x->right = node;
-                break;
-            }
-        }
-    }
-    return x;
-}
-BST* BST::remove(int e, BST* parent = nullptr) {
-    BST* x = this;
-    while (x) {
-        if (e < x->val) {
-            parent = x;
-            x = x->left;
-        } else if (e > x->val) {
-            parent = x;
-            x = x->right;
-        } else {
-            if (x->left && x->right) {
-                BST* min = treeMin(x->right);
-                x->val = min->val;
-                x->right->remove(min->val, x);
-            } else if (!parent) {
-                if (x->left) {
-                    x->val = x->left->val;
-                    x->right = x->left->right;
-                    x->left = x->left->left;
-                } else if (x->right) {
-                    x->val = x->right->val;
-                    x->left = x->right->left;
-                    x->right = x->right->right;
-                } else {
-                    x = nullptr;
-                }
-            } else if (parent->left == x) {
-                parent->left = x->left ? x->left : x->right;
-            } else if (parent->right == x) {
-                parent->right = x->left ? x->left : x->right;
-            }
-            break;
-        }
-    }
-    return x;
-}
-void BST::inorderTraversal() {
-    BST* x = this;
-    stack<BST*> s;
-    
-    while (x || !s.empty()) {
-        while (x) {
-            s.push(x);
-            x = x->left;
-        }
-        
-        x = s.top();
-        s.pop();
-        
-        cout << x->val << " ";
-        x = x->right;
-    }
-}
-void BST::preorderTraversal() {
-    BST* x = this;
-    stack<BST*> s;
-    
-    s.push(x);
-    while (!s.empty()) {
-        x = s.top();
-        s.pop();
-        
-        cout << x->val << " ";
-        if (x->right) s.push(x->right);
-        if (x->left) s.push(x->left);
-    }
-}
-void BST::postorderTraversal() {
-    BST* x = this;
-    stack<BST*> s1, s2;
-    
-    s1.push(x);
-    while (!s1.empty()) {
-        x = s1.top();
-        s1.pop();
-        
-        s2.push(x);
-        if (x->left) s1.push(x->left);
-        if (x->right) s1.push(x->right);
-    }
-    
-    while (!s2.empty()) {
-        x = s2.top();
-        s2.pop();
-        cout << x->val << " ";
-    }
-}
+void DynamicStack::pop() { if (!empty()) --t; }
 
 int main() {
-    BST *root = new BST(10);
-    root->left = new BST(5);
-    root->left->left = new BST(2);
-    root->left->left->left = new BST(1);
-    root->left->right = new BST(5);
-    root->right = new BST(15);
-    root->right->left = new BST(13);
-    root->right->left->right = new BST(14);
-    root->right->right = new BST(22);
+    DynamicStack* s = new DynamicStack();
     
-    cout << "Inorder: ";
-    root->inorderTraversal();
-    cout << "\n";
-    cout << "Preorder: ";
-    root->preorderTraversal();
-    cout << "\n";
-    cout << "Postorder: ";
-    root->postorderTraversal();
-    cout << "\n";
+    s->push(15);
+    s->push(14);
+    s->push(13);
+    s->push(12);
+    s->push(11);
+    s->push(10);
+    s->push(9);
+    s->push(8);
+    s->push(7);
+    s->push(6);
+    s->push(5);
+    s->push(4);
+    s->push(3);
+    s->push(2);
+    s->push(1);
     
-    root->insert(12);
-    root->inorderTraversal();
-    cout << "\n";
-    
-    root->remove(1);
-    root->remove(14);
-    root->remove(12);
-    root->inorderTraversal();
-    cout << "\n";
-    
-    cout << "FIN\n";
+    while (!s->empty()) {
+        cout << s->top() << " ";
+        s->pop();
+    }
+    cout << "\nFIN\n";
     return 0;
 }
