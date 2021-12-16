@@ -1,65 +1,66 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <unordered_map>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-class DynamicStack {
-    enum { DEF_CAP = 3 };
-public:
-    DynamicStack(int cap = DEF_CAP);
-    ~DynamicStack();
-    int size() const;
-    bool empty() const;
-    int top() const;
-    void push(int e);
-    void pop();
-private:
-    int* S;
-    int t;
-    int capacity;
+struct TrieNode {
+    unordered_map<char, TrieNode*> children;
+    bool isEnd;
 };
 
-DynamicStack::DynamicStack(int cap) : S(new int[cap]), t(-1), capacity(cap) { }
-DynamicStack::~DynamicStack() { while (!empty()) pop(); }
-int DynamicStack::size() const { return t + 1; }
-bool DynamicStack::empty() const { return size() == 0; }
-int DynamicStack::top() const { return empty() ? -1 : S[t]; }
-void DynamicStack::push(int e) {
-    if (size() == capacity) {
-        int* T = new int[capacity * 2];
-        for (int i = 0; i < capacity; ++i) T[i] = S[i];
-        capacity *= 2;
-        S = T;
-        delete[] T;
+class Trie {
+public:
+    TrieNode* root;
+    Trie();
+    void insert(string str);
+    bool query(string str);
+};
+
+Trie::Trie() { root = new TrieNode(); }
+void Trie::insert(string str) {
+    TrieNode* crawler = root;
+    
+    for (char c : str) {
+        if (crawler->children.find(c) == crawler->children.end()) {
+            TrieNode* node = new TrieNode();
+            crawler->children.insert({ c, node });
+        }
+        crawler = crawler->children[c];
     }
-    S[++t] = e;
+    crawler->isEnd = true;
 }
-void DynamicStack::pop() { if (!empty()) --t; }
+bool Trie::query(string str) {
+    TrieNode* crawler = root;
+    
+    for (char c : str) {
+        if (crawler->children.find(c) == crawler->children.end()) return false;
+        crawler = crawler->children[c];
+    }
+    if (crawler->isEnd) return true;
+    return false;
+}
 
 int main() {
-    DynamicStack* s = new DynamicStack();
+    Trie* t = new Trie();
     
-    s->push(15);
-    s->push(14);
-    s->push(13);
-    s->push(12);
-    s->push(11);
-    s->push(10);
-    s->push(9);
-    s->push(8);
-    s->push(7);
-    s->push(6);
-    s->push(5);
-    s->push(4);
-    s->push(3);
-    s->push(2);
-    s->push(1);
+    t->insert("I'm used");
+    t->insert("to it");
+    t->insert("by now");
+    t->insert("Another day");
+    t->insert("just believe");
+    t->insert("Just breathe");
     
-    while (!s->empty()) {
-        cout << s->top() << " ";
-        s->pop();
-    }
+    cout << t->query("I'm used") << "\n";
+    cout << t->query("hello") << "\n";
+    cout << t->query("to it") << "\n";
+    cout << t->query("by now") << "\n";
+    cout << t->query("Another day") << "\n";
+    cout << t->query("just believe") << "\n";
+    cout << t->query("Just breathe") << "\n";
+    cout << t->query("just") << "\n";
     cout << "\nFIN\n";
     return 0;
 }
