@@ -1,66 +1,88 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <unordered_map>
 #include <string>
 #include <vector>
 
 using namespace std;
 
-struct TrieNode {
-    unordered_map<char, TrieNode*> children;
-    bool isEnd;
-};
-
-class Trie {
+class MaxHeap {
 public:
-    TrieNode* root;
-    Trie();
-    void insert(string str);
-    bool query(string str);
+    MaxHeap(vector<int>& vec);
+    vector<int> heap;
+    vector<int> buildMaxHeap(vector<int>& vec);
+    void maxHeapify(int i, vector<int>& vec, int heapSize);
+    void insert(int e);
+    int extractMax();
 };
 
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(string str) {
-    TrieNode* crawler = root;
-    
-    for (char c : str) {
-        if (crawler->children.find(c) == crawler->children.end()) {
-            TrieNode* node = new TrieNode();
-            crawler->children.insert({ c, node });
-        }
-        crawler = crawler->children[c];
-    }
-    crawler->isEnd = true;
+MaxHeap::MaxHeap(vector<int>& vec) { heap = buildMaxHeap(vec); }
+vector<int> MaxHeap::buildMaxHeap(vector<int>& vec) {
+    int heapSize = (int)vec.size();
+    int parent = heapSize / 2 - 1;
+    for (int i = parent; i >= 0; --i) maxHeapify(i, vec, heapSize);
+    return vec;
 }
-bool Trie::query(string str) {
-    TrieNode* crawler = root;
+void MaxHeap::maxHeapify(int i, vector<int>& vec, int heapSize) {
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
     
-    for (char c : str) {
-        if (crawler->children.find(c) == crawler->children.end()) return false;
-        crawler = crawler->children[c];
+    int largest = i;
+    if (l < heapSize && vec[l] > vec[largest]) largest = l;
+    if (r < heapSize && vec[r] > vec[largest]) largest = r;
+    
+    if (largest != i) {
+        swap(vec[i], vec[largest]);
+        maxHeapify(largest, vec, heapSize);
     }
-    if (crawler->isEnd) return true;
-    return false;
+}
+void MaxHeap::insert(int e) {
+    heap.push_back(e);
+    int heapSize = (int)heap.size();
+    int parent = heapSize / 2 - 1;
+    int current = heapSize - 1;
+    
+    while (current > 0 && heap[current] > heap[parent]) {
+        swap(heap[current], heap[parent]);
+        current = parent;
+        parent = (current - 1) / 2;
+    }
+}
+int MaxHeap::extractMax() {
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
+    
+    int max = heap[0];
+    heap[0] = heap[heapSize - 1];
+    heap.pop_back();
+    maxHeapify(0, heap, heapSize - 1);
+    
+    return max;
 }
 
 int main() {
-    Trie* t = new Trie();
+    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
+    MaxHeap maxHeap(arr);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    t->insert("I'm used");
-    t->insert("to it");
-    t->insert("by now");
-    t->insert("Another day");
-    t->insert("just believe");
-    t->insert("Just breathe");
+    printf("\nInsert: 22\n");
+    maxHeap.insert(22);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    cout << t->query("I'm used") << "\n";
-    cout << t->query("hello") << "\n";
-    cout << t->query("to it") << "\n";
-    cout << t->query("by now") << "\n";
-    cout << t->query("Another day") << "\n";
-    cout << t->query("just believe") << "\n";
-    cout << t->query("Just breathe") << "\n";
-    cout << t->query("just") << "\n";
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nInsert: 18\n");
+    maxHeap.insert(18);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
     cout << "\nFIN\n";
     return 0;
 }
