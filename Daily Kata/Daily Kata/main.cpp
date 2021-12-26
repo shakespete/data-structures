@@ -1,65 +1,184 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <unordered_map>
+#include <stack>
 #include <vector>
 
 using namespace std;
 
-struct TrieNode {
-    unordered_map<char, TrieNode*> children;
-    bool isEnd;
-};
-
-class Trie {
+class BST {
 public:
-    Trie();
-    TrieNode* root;
-    void insert(string str);
-    bool query(string str);
+    int val;
+    BST* left;
+    BST* right;
+    BST(int e);
+    BST* treeMin(BST* x);
+    BST* treeSearch(int e);
+    BST* insert(int e);
+    BST* remove(int e, BST* parent);
+    void inorderTraversal();
+    void preorderTraversal();
+    void postorderTraversal();
 };
 
-Trie::Trie() { root = new TrieNode(); }
-void Trie::insert(string str) {
-    TrieNode* crawler = root;
-    
-    for (auto c : str) {
-        if (crawler->children.find(c) == crawler->children.end()) {
-            TrieNode* node = new TrieNode();
-            crawler->children.insert({ c, node });
-        }
-        crawler = crawler->children[c];
-    }
-    crawler->isEnd = true;
+BST::BST(int e) {
+    val = e;
+    left = nullptr;
+    right = nullptr;
 }
-bool Trie::query(string str) {
-    TrieNode* crawler = root;
-    
-    for (auto c : str) {
-        if (crawler->children.find(c) == crawler->children.end()) return false;
-        crawler = crawler->children[c];
+BST* BST::treeSearch(int e) {
+    BST* x = this;
+    while (x && e != x->val) {
+        if (e < x->val) x = x->left;
+        else x = x->right;
     }
-    if (crawler->isEnd) return true;
-    return false;
+    return x;
+}
+BST* BST::treeMin(BST* x) {
+    while (x->left) x = x->left;
+    return x;
+}
+BST* BST::insert(int e) {
+    BST* x = this;
+    while (true) {
+        if (e < x->val) {
+            if (x->left) x = x->left;
+            else {
+                BST* node = new BST(e);
+                x->left = node;
+                break;
+            }
+        } else {
+            if (x->right) x = x->right;
+            else {
+                BST* node = new BST(e);
+                x->right = node;
+                break;
+            }
+        }
+    }
+    return x;
+}
+BST* BST::remove(int e, BST* parent = nullptr) {
+    BST* x = this;
+    while (x) {
+        if (e < x->val) {
+            parent = x;
+            x = x->left;
+        } else if (e > x->val) {
+            parent = x;
+            x = x->right;
+        } else {
+            if (x->left && x->right) {
+                BST* min = treeMin(x->right);
+                x->val = min->val;
+                x->right->remove(min->val, x);
+            } else if (!parent) {
+                if (x->left) {
+                    x->val = x->left->val;
+                    x->right = x->left->right;
+                    x->left = x->left->left;
+                } else if (x->right) {
+                    x->val = x->right->val;
+                    x->left = x->right->left;
+                    x->right = x->right->right;
+                } else {
+                    x = nullptr;
+                }
+            } else if (parent->left == x) {
+                parent->left = x->left ? x->left : x->right;
+            } else if (parent->right == x) {
+                parent->right = x->left ? x->left : x->right;
+            }
+            break;
+        }
+    }
+    return x;
+}
+void BST::inorderTraversal() {
+    BST* x = this;
+    stack<BST*> s;
+    
+    while (x || !s.empty()) {
+        while (x) {
+            s.push(x);
+            x = x->left;
+        }
+        
+        x = s.top();
+        s.pop();
+        
+        cout << x->val << " ";
+        x = x->right;
+    }
+}
+void BST::preorderTraversal() {
+    BST* x = this;
+    stack<BST*> s;
+    
+    s.push(x);
+    while (!s.empty()) {
+        x = s.top();
+        s.pop();
+        
+        cout << x->val << " ";
+        
+        if (x->right) s.push(x->right);
+        if (x->left) s.push(x->left);
+    }
+}
+void BST::postorderTraversal() {
+    BST* x = this;
+    stack<BST*> s1, s2;
+    
+    s1.push(x);
+    while (!s1.empty()) {
+        x = s1.top();
+        s1.pop();
+        s2.push(x);
+        
+        if (x->left) s1.push(x->left);
+        if (x->right) s1.push(x->right);
+    }
+    
+    while (!s2.empty()) {
+        x = s2.top();
+        s2.pop();
+        cout << x->val << " ";
+    }
 }
 
 int main() {
-         
-    Trie* trie = new Trie();
-    trie->insert("The fault,");
-    trie->insert("dear Brutus,");
-    trie->insert("is not in our stars.");
-    trie->insert("But in ourselves,");
-    trie->insert("that we");
-    trie->insert("are underlings.");
     
-    cout << trie->query("The fault,") << " ";
-    cout << trie->query("dear Brutus,") << " ";
-    cout << trie->query("is not in our stars.") << "\n";
-    cout << trie->query("But in ourselves,") << " ";
-    cout << trie->query("that we") << " ";
-    cout << trie->query("are underlings.") << "\n";
+    BST *root = new BST(10);
+    root->left = new BST(5);
+    root->left->left = new BST(2);
+    root->left->left->left = new BST(1);
+    root->left->right = new BST(5);
+    root->right = new BST(15);
+    root->right->left = new BST(13);
+    root->right->left->right = new BST(14);
+    root->right->right = new BST(22);
+    
+    cout << "Inorder: ";
+    root->inorderTraversal();
+    cout << "\n";
+    cout << "Preorder: ";
+    root->preorderTraversal();
+    cout << "\n";
+    cout << "Postorder: ";
+    root->postorderTraversal();
+    cout << "\n";
     
     
-    cout << "\nFIN\n";
+    root->insert(12);
+    root->inorderTraversal();
+    cout << "\n";
+
+    root->remove(1);
+    root->remove(14);
+    root->remove(12);
+    root->inorderTraversal();
+    cout << "\n";
+    std::cout << "FIN\n";
     return 0;
 }
