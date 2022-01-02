@@ -1,182 +1,136 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <stack>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-class BST {
-public:
-    int val;
-    BST* left;
-    BST* right;
-    BST(int e);
-    BST* treeMin(BST* x);
-    BST* treeSearch(int e);
-    BST* insert(int e);
-    BST* remove(int e, BST* parent);
-    void inorderTraversal();
-    void preorderTraversal();
-    void postorderTraversal();
+struct Node {
+    string val;
+    Node* next;
+    Node* prev;
+    Node(string str) {
+        val = str;
+        prev = nullptr;
+        next = nullptr;
+    }
 };
 
-BST::BST(int e) {
-    val = e;
-    left = nullptr;
-    right = nullptr;
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, string str);
+    void addFront(string str);
+    void addBack(string str);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+
+DLL::DLL() {
+    head = new Node("*");
+    tail = new Node("*");
+    head->next = tail;
+    tail->prev = head;
 }
-BST* BST::treeMin(BST* x) {
-    while (x->left) x = x->left;
-    return x;
+DLL::~DLL() { while (!empty()) removeBack(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
+void DLL::add(Node* v, string str) {
+    Node* u = new Node(str);
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
 }
-BST* BST::treeSearch(int e) {
-    BST* x = this;
-    while (x && e != x->val) {
-        if (e < x->val) x = x->left;
-        else x = x->right;
+void DLL::addFront(string str) { add(head->next, str); }
+void DLL::addBack(string str) { add(tail, str); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
-    return x;
 }
-BST* BST::insert(int e) {
-    BST* x = this;
-    while (true) {
-        if (e < x->val) {
-            if (x->left) x = x->left;
-            else {
-                BST* node = new BST(e);
-                x->left = node;
-                break;
-            }
-        } else {
-            if (x->right) x = x->right;
-            else {
-                BST* node = new BST(e);
-                x->right = node;
-                break;
-            }
-        }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(string str);
+    void insert(string str);
+    void remove(string str);
+    Node* retrieve(string str);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string str) {
+    int hash = 5381;
+    for (int i = 0; i < str.size(); ++i) {
+        hash = (((hash << 5) + hash) + str[i]) % capacity;
     }
-    return x;
+    return hash;
 }
-BST* BST::remove(int e, BST* parent = nullptr) {
-    BST* x = this;
-    while (x) {
-        if (e < x->val) {
-            parent = x;
-            x = x->left;
-        } else if (e > x->val) {
-            parent = x;
-            x = x->right;
-        } else {
-            if (x->left && x->right) {
-                BST* min = treeMin(x->right);
-                x->val = min->val;
-                x->right->remove(min->val, x);
-            } else if (!parent) {
-                if (x->left) {
-                    x->val = x->left->val;
-                    x->right = x->left->right;
-                    x->left = x->left->left;
-                } else if (x->right) {
-                    x->val = x->right->val;
-                    x->left = x->right->left;
-                    x->right = x->right->right;
-                } else {
-                    x = nullptr;
-                }
-            } else if (parent->left == x) {
-                parent->left = x->left ? x->left : x->right;
-            } else if (parent->right == x) {
-                parent->right = x->left ? x->left : x->right;
-            }
-            break;
-        }
-    }
-    return x;
+void HashMap::insert(string str) {
+    int hashVal = hash(str);
+    HM[hashVal].addBack(str);
 }
-void BST::inorderTraversal() {
-    BST* x = this;
-    stack<BST*> s;
+void HashMap::remove(string str) {
+    int hashVal = hash(str);
+    if (HM[hashVal].empty()) return;
     
-    while (x || !s.empty()) {
-        while (x) {
-            s.push(x);
-            x = x->left;
-        }
-        
-        x = s.top();
-        s.pop();
-        
-        cout << x->val << " ";
-        x = x->right;
-    }
+    Node* node = retrieve(str);
+    if (node) HM[hashVal].remove(node);
+    return;
 }
-void BST::preorderTraversal() {
-    BST* x = this;
-    stack<BST*> s;
+Node* HashMap::retrieve(string str) {
+    int hashVal = hash(str);
+    if (HM[hashVal].empty()) return nullptr;
     
-    s.push(x);
-    while (!s.empty()) {
-        x = s.top();
-        s.pop();
-        
-        cout << x->val << " ";
-        if (x->right) s.push(x->right);
-        if (x->left) s.push(x->left);
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (str.compare(node->val) == 0) return node;
+        node = node->next;
     }
-}
-void BST::postorderTraversal() {
-    BST* x = this;
-    stack<BST*> s1, s2;
-    
-    s1.push(x);
-    while (!s1.empty()) {
-        x = s1.top();
-        s1.pop();
-        s2.push(x);
-        
-        if (x->left) s1.push(x->left);
-        if (x->right) s1.push(x->right);
-    }
-    
-    while (!s2.empty()) {
-        x = s2.top();
-        s2.pop();
-        cout << x->val << " ";
-    }
+    return nullptr;
 }
 
 int main() {
-    BST *root = new BST(10);
-    root->left = new BST(5);
-    root->left->left = new BST(2);
-    root->left->left->left = new BST(1);
-    root->left->right = new BST(5);
-    root->right = new BST(15);
-    root->right->left = new BST(13);
-    root->right->left->right = new BST(14);
-    root->right->right = new BST(22);
+//
     
-    cout << "Inorder: ";
-    root->inorderTraversal();
-    cout << "\n";
-    cout << "Preorder: ";
-    root->preorderTraversal();
-    cout << "\n";
-    cout << "Postorder: ";
-    root->postorderTraversal();
-    cout << "\n";
+    HashMap* hm = new HashMap();
+    hm->insert("My tongue");
+    hm->insert("will tell");
+    hm->insert("the anger");
+    hm->insert("of my heart,");
+    hm->insert("or else");
+    hm->insert("my heart concealing");
+    hm->insert("it will break.");
     
-    
-    root->insert(12);
-    root->inorderTraversal();
-    cout << "\n";
-    
-    root->remove(1);
-    root->remove(14);
-    root->remove(12);
-    root->inorderTraversal();
-    cout << "\n";
+    cout << hm->retrieve("My tongue")->val << " ";
+    cout << hm->retrieve("will tell")->val << " ";
+    cout << hm->retrieve("the anger")->val << " ";
+    cout << hm->retrieve("of my heart,")->val << "\n";
+    cout << hm->retrieve("or else")->val << " ";
+    cout << hm->retrieve("my heart concealing")->val << " ";
+    cout << hm->retrieve("it will break.")->val << "\n";
+        
     std::cout << "FIN\n";
     return 0;
 }
