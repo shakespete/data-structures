@@ -65,18 +65,48 @@ void DLL::remove(Node *v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(string s);
+    void deq();
+private:
+    DLL dlist;
+    int n;
+};
+
+Queue::Queue() : dlist(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? nullptr : dlist.front(); }
+void Queue::enq(string s) {
+    dlist.addBack(s);
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        dlist.removeFront();
+        --n;
+    }
+}
+
 int main() {
         
-    DLL* dlist = new DLL();
-    dlist->addBack("There is nothing");
-    dlist->addBack("either good");
-    dlist->addBack("or bad,");
-    dlist->addBack("but thinking");
-    dlist->addBack("makes it so.");
+    Queue* q = new Queue();
+    q->enq("There is nothing");
+    q->enq("either good");
+    q->enq("or bad,");
+    q->enq("but thinking");
+    q->enq("makes it so.");
     
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->deq();
     }
     
     std::cout << "\nFIN\n";
