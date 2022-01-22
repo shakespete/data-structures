@@ -1,68 +1,83 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <unordered_map>
 #include <string>
 #include <vector>
 
 using namespace std;
 
 struct Node {
-    bool isEnd;
-    string word;
-    unordered_map<char, Node*> children;
-    Node() {
-        isEnd = false;
-        word = "";
-    }
-};
-class Trie {
-public:
-    Trie();
-    void insert(string str);
-    bool query(string str);
-private:
-    Node* root;
+    string val;
+    Node* prev;
+    Node* next;
 };
 
-Trie::Trie() { root = new Node(); }
-void Trie::insert(string str) {
-    Node* crawler = root;
-    for (auto& c : str) {
-        if (crawler->children.find(c) == crawler->children.end()) {
-            Node* node = new Node();
-            crawler->children.insert({c, node});
-        }
-        crawler = crawler->children[c];
-    }
-    crawler->isEnd = true;
-    crawler->word = str;
+class DLList {
+public:
+    DLList();
+    ~DLList();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, string str);
+    void addFront(string str);
+    void addBack(string str);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+
+DLList::DLList() {
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+    head->val = "*";
+    tail->val = "*";
 }
-bool Trie::query(string str) {
-    Node* crawler = root;
-    for (auto& c : str) {
-        if (crawler->children.find(c) == crawler->children.end()) return false;
-        crawler = crawler->children[c];
-    }
-    if (crawler->isEnd) return true;
-    return false;
+bool DLList::empty() const { return head->next == tail; }
+Node* DLList::front() const { return empty() ? nullptr : head->next; }
+Node* DLList::back() const { return empty() ? nullptr : tail->prev; }
+void DLList::add(Node* v, string str) {
+    Node* u = new Node;
+    u->val = str;
+    
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
 }
+void DLList::addFront(string str) { add(head->next, str); }
+void DLList::addBack(string str) { add(tail, str); }
+void DLList::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
+    }
+}
+void DLList::removeFront() { if (!empty()) remove(head->next); }
+void DLList::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    Trie* t = new Trie();
-    t->insert("Lord,");
-    t->insert("what");
-    t->insert("fools");
-    t->insert("these");
-    t->insert("mortals");
-    t->insert("be!");
+    DLList* dlist = new DLList();
+    dlist->addBack("We are");
+    dlist->addBack("such stuff");
+    dlist->addBack("as dreams");
+    dlist->addBack("are made on,");
+    dlist->addBack("and our");
+    dlist->addBack("little life");
+    dlist->addBack("is rounded");
+    dlist->addBack("with a sleep.");
     
-    cout << t->query("Lord,") << "\n";
-    cout << t->query("what") << "\n";
-    cout << t->query("fools") << "\n";
-    cout << t->query("these") << "\n";
-    cout << t->query("mortals") << "\n";
-    cout << t->query("be.") << "\n";
-    
+    while (!dlist->empty()) {
+        cout << dlist->front()->val << " ";
+        dlist->removeFront();
+    }
     std::cout << "\nFIN\n";
     return 0;
 }
