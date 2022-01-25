@@ -1,128 +1,87 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <string>
 #include <vector>
 
 using namespace std;
 
-struct Node {
-    string val;
-    Node* prev;
-    Node* next;
-};
-
-class DLList {
+class Heap {
 public:
-    DLList();
-    ~DLList();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, string str);
-    void addFront(string str);
-    void addBack(string str);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
-private:
-    Node* head;
-    Node* tail;
+    Heap(vector<int>& vec);
+    vector<int> heap;
+    vector<int> buildMaxHeap(vector<int>& vec);
+    void maxHeapify(int i, vector<int>& vec, int heapSize);
+    void insert(int e);
+    int extractMax();
 };
 
-DLList::DLList() {
-    head = new Node();
-    tail = new Node();
-    head->next = tail;
-    tail->prev = head;
-    head->val = "*";
-    tail->val = "*";
+Heap::Heap(vector<int>& vec) { heap = buildMaxHeap(vec); }
+vector<int> Heap::buildMaxHeap(vector<int>& vec) {
+    int heapSize = (int)vec.size();
+    int parent = heapSize / 2 - 1;
+    for (int i = parent; i >= 0; --i) maxHeapify(i, vec, heapSize);
+    return vec;
 }
-DLList::~DLList() { while (!empty()) removeBack(); }
-bool DLList::empty() const { return head->next == tail; }
-Node* DLList::front() const { return empty() ? nullptr : head->next; }
-Node* DLList::back() const { return empty() ? nullptr : tail->prev; }
-void DLList::add(Node* v, string str) {
-    Node* u = new Node;
-    u->val = str;
+void Heap::maxHeapify(int i, vector<int>& vec, int heapSize) {
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
     
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLList::addFront(string str) { add(head->next, str); }
-void DLList::addBack(string str) { add(tail, str); }
-void DLList::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
+    int largest = i;
+    if (l < heapSize && vec[l] > vec[largest]) largest = l;
+    if (r < heapSize && vec[r] > vec[largest]) largest = r;
+    
+    if (largest != i) {
+        swap(vec[largest], vec[i]);
+        maxHeapify(largest, vec, heapSize);
     }
 }
-void DLList::removeFront() { if (!empty()) remove(head->next); }
-void DLList::removeBack() { if (!empty()) remove(tail->prev); }
-
-class HashMap {
-    enum { DEF_CAP = 100 };
-public:
-    HashMap(int cap = DEF_CAP);
-    int hash(string str);
-    void insert(string str);
-    Node* retrieve(string str);
-    void remove(string str);
-private:
-    DLList* HM;
-    int capacity;
-};
-
-HashMap::HashMap(int cap) : HM(new DLList[cap]), capacity(cap) { };
-int HashMap::hash(string str) {
-    int hash = 5381;
-    for (int i = 0; i < (int)str.size(); ++i) {
-        hash = (((hash << 5) + hash) + str[i]) % capacity;
-    }
-    return hash;
-}
-void HashMap::insert(string str) {
-    int hashVal = hash(str);
-    HM[hashVal].addBack(str);
-}
-Node* HashMap::retrieve(string str) {
-    int hashVal = hash(str);
-//    cout << hashVal << " ";
-    if (HM[hashVal].empty()) return nullptr;
+void Heap::insert(int e) {
+    heap.push_back(e);
+    int heapSize = (int)heap.size();
+    int parent = heapSize / 2 - 1;
+    int current = heapSize - 1;
     
-    Node* node = HM[hashVal].front();
-    while (node) {
-        if (str.compare(node->val) == 0) return node;
-        node = node->next;
+    while (current > 0 && heap[current] > heap[parent]) {
+        swap(heap[current], heap[parent]);
+        current = parent;
+        parent = (current - 1) / 2;
     }
-    return nullptr;
 }
-void HashMap::remove(string str) {
-    int hashVal = hash(str);
-    if (HM[hashVal].empty()) return;
+int Heap::extractMax() {
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
     
-    Node* node = retrieve(str);
-    if (node) HM[hashVal].remove(node);
-    return;
+    int max = heap[0];
+    heap[0] = heap[heapSize - 1];
+    heap.pop_back();
+    maxHeapify(0, heap, heapSize - 1);
+    
+    return max;
 }
 
 int main() {
-    HashMap* hm = new HashMap();
-    hm->insert("Hell");
-    hm->insert("is empty");
-    hm->insert("and all");
-    hm->insert("the devils");
-    hm->insert("are here");
+    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
+    Heap maxHeap(arr);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    cout << hm->retrieve("Hell")->val << " ";
-    cout << hm->retrieve("is empty")->val << " ";
-    cout << hm->retrieve("and all")->val << " ";
-    cout << hm->retrieve("the devils")->val << " ";
-    cout << hm->retrieve("are here")->val << " ";
+    printf("\nInsert: 22\n");
+    maxHeap.insert(22);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nInsert: 18\n");
+    maxHeap.insert(18);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
     
     std::cout << "\nFIN\n";
     return 0;
