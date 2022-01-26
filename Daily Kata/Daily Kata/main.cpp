@@ -1,87 +1,96 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-class Heap {
-public:
-    Heap(vector<int>& vec);
-    vector<int> heap;
-    vector<int> buildMaxHeap(vector<int>& vec);
-    void maxHeapify(int i, vector<int>& vec, int heapSize);
-    void insert(int e);
-    int extractMax();
+struct Node {
+    string val;
+    Node* next;
 };
 
-Heap::Heap(vector<int>& vec) { heap = buildMaxHeap(vec); }
-vector<int> Heap::buildMaxHeap(vector<int>& vec) {
-    int heapSize = (int)vec.size();
-    int parent = heapSize / 2 - 1;
-    for (int i = parent; i >= 0; --i) maxHeapify(i, vec, heapSize);
-    return vec;
-}
-void Heap::maxHeapify(int i, vector<int>& vec, int heapSize) {
-    int l = 2 * i + 1;
-    int r = 2 * i + 2;
-    
-    int largest = i;
-    if (l < heapSize && vec[l] > vec[largest]) largest = l;
-    if (r < heapSize && vec[r] > vec[largest]) largest = r;
-    
-    if (largest != i) {
-        swap(vec[largest], vec[i]);
-        maxHeapify(largest, vec, heapSize);
+class CLL {
+public:
+    CLL();
+    ~CLL();
+    bool empty() const;
+    Node* front() const;
+    void advance();
+    void add(string s);
+    void remove();
+private:
+    Node* cursor;
+};
+
+CLL::CLL() : cursor(nullptr) { }
+CLL::~CLL() { while (!empty()) remove(); }
+bool CLL::empty() const { return cursor == nullptr; }
+Node* CLL::front() const { return empty() ? nullptr : cursor->next; }
+void CLL::advance() { if (!empty()) cursor = cursor->next; }
+void CLL::add(string s) {
+    Node* v = new Node();
+    v->val = s;
+    if (empty()) {
+        v->next = v;
+        cursor = v;
+    } else {
+        v->next = cursor->next;
+        cursor->next = v;
     }
 }
-void Heap::insert(int e) {
-    heap.push_back(e);
-    int heapSize = (int)heap.size();
-    int parent = heapSize / 2 - 1;
-    int current = heapSize - 1;
-    
-    while (current > 0 && heap[current] > heap[parent]) {
-        swap(heap[current], heap[parent]);
-        current = parent;
-        parent = (current - 1) / 2;
+void CLL::remove() {
+    if (!empty()) {
+        Node* old = cursor->next;
+        if (old == cursor) cursor = nullptr;
+        else cursor->next = old->next;
+        delete old;
     }
 }
-int Heap::extractMax() {
-    int heapSize = (int)heap.size();
-    if (heapSize == 0) return -1;
-    
-    int max = heap[0];
-    heap[0] = heap[heapSize - 1];
-    heap.pop_back();
-    maxHeapify(0, heap, heapSize - 1);
-    
-    return max;
+
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(string s);
+    void deq();
+private:
+    CLL CL;
+    int n;
+};
+
+Queue::Queue() : CL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? nullptr : CL.front(); }
+void Queue::enq(string s) {
+    CL.add(s);
+    CL.advance();
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        CL.remove();
+        --n;
+    }
 }
 
 int main() {
-    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
-    Heap maxHeap(arr);
-    for (int i : maxHeap.heap) printf("%d ", i);
+    Queue* q = new Queue();
+    q->enq("We know");
+    q->enq("what we are,");
+    q->enq("but not");
+    q->enq("what we");
+    q->enq("may be.");
     
-    printf("\nInsert: 22\n");
-    maxHeap.insert(22);
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nInsert: 18\n");
-    maxHeap.insert(18);
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->deq();
+    }
     
     std::cout << "\nFIN\n";
     return 0;
