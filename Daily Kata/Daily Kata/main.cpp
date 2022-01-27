@@ -1,97 +1,183 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <string>
+#include <stack>
 #include <vector>
 
 using namespace std;
 
-struct Node {
-    string val;
-    Node* next;
-};
-
-class CLL {
+class BST {
 public:
-    CLL();
-    ~CLL();
-    bool empty() const;
-    Node* front() const;
-    void advance();
-    void add(string s);
-    void remove();
-private:
-    Node* cursor;
+    BST(int e);
+    int val;
+    BST* left;
+    BST* right;
+    BST* treeMin(BST* x);
+    BST* treeSearch(int e);
+    BST* insert(int e);
+    BST* remove(int e, BST* parent);
+    void inorderTraversal();
+    void preorderTraversal();
+    void postorderTraversal();
 };
 
-CLL::CLL() : cursor(nullptr) { }
-CLL::~CLL() { while (!empty()) remove(); }
-bool CLL::empty() const { return cursor == nullptr; }
-Node* CLL::front() const { return empty() ? nullptr : cursor->next; }
-void CLL::advance() { if (!empty()) cursor = cursor->next; }
-void CLL::add(string s) {
-    Node* v = new Node();
-    v->val = s;
-    if (empty()) {
-        v->next = v;
-        cursor = v;
-    } else {
-        v->next = cursor->next;
-        cursor->next = v;
+BST::BST(int e) {
+    val = e;
+    left = nullptr;
+    right = nullptr;
+}
+BST* BST::treeMin(BST* x) {
+    while (x->left) x = x->left;
+    return x;
+}
+BST* BST::treeSearch(int e) {
+    BST* x = this;
+    while (x && e != x->val) {
+        if (e < x->val) x = x->left;
+        else x = x->right;
+    }
+    return x;
+}
+BST* BST::insert(int e) {
+    BST* x = this;
+    while (true) {
+        if (e < x->val) {
+            if (x->left) x = x->left;
+            else {
+                BST* node = new BST(e);
+                x->left = node;
+                break;
+            }
+        } else {
+            if (x->right) x = x->right;
+            else {
+                BST* node = new BST(e);
+                x->right = node;
+                break;
+            }
+        }
+    }
+    return x;
+}
+BST* BST::remove(int e, BST* parent = nullptr) {
+    BST* x = this;
+    while (x) {
+        if (e < x->val) {
+            parent = x;
+            x = x->left;
+        } else if (e > x->val) {
+            parent = x;
+            x = x->right;
+        } else {
+            if (x->left && x->right) {
+                BST* min = treeMin(x->right);
+                x->val = min->val;
+                x->right->remove(min->val, x);
+            } else if (!parent) {
+                if (x->left) {
+                    x->val = x->left->val;
+                    x->right = x->left->right;
+                    x->left = x->left->left;
+                } else if (x->right) {
+                    x->val = x->right->val;
+                    x->left = x->right->left;
+                    x->right = x->right->right;
+                } else {
+                    x = nullptr;
+                }
+            } else if (parent->left == x) {
+                parent->left = x->left ? x->left : x->right;
+            } else if (parent->right == x) {
+                parent->right = x->left ? x->left : x->right;
+            }
+            break;
+        }
+    }
+    return x;
+}
+void BST::inorderTraversal() {
+    BST* x = this;
+    stack<BST*> s;
+    
+    while (x || !s.empty()) {
+        while (x) {
+            s.push(x);
+            x = x->left;
+        }
+        
+        x = s.top();
+        s.pop();
+        
+        cout << x->val << " ";
+        x = x->right;
     }
 }
-void CLL::remove() {
-    if (!empty()) {
-        Node* old = cursor->next;
-        if (old == cursor) cursor = nullptr;
-        else cursor->next = old->next;
-        delete old;
+void BST::preorderTraversal() {
+    BST* x = this;
+    stack<BST*> s;
+    
+    s.push(x);
+    while (!s.empty()) {
+        x = s.top();
+        s.pop();
+        
+        cout << x->val << " ";
+        if (x->right) s.push(x->right);
+        if (x->left) s.push(x->left);
     }
 }
-
-class Queue {
-public:
-    Queue();
-    ~Queue();
-    int size() const;
-    bool empty() const;
-    Node* front() const;
-    void enq(string s);
-    void deq();
-private:
-    CLL CL;
-    int n;
-};
-
-Queue::Queue() : CL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? nullptr : CL.front(); }
-void Queue::enq(string s) {
-    CL.add(s);
-    CL.advance();
-    ++n;
-}
-void Queue::deq() {
-    if (!empty()) {
-        CL.remove();
-        --n;
+void BST::postorderTraversal() {
+    BST* x = this;
+    stack<BST*> s1, s2;
+    
+    s1.push(x);
+    while (!s1.empty()) {
+        x = s1.top();
+        s1.pop();
+        s2.push(x);
+        
+        if (x->left) s1.push(x->left);
+        if (x->right) s1.push(x->right);
+    }
+    
+    while (!s2.empty()) {
+        x = s2.top();
+        cout << x->val << " ";
+        s2.pop();
     }
 }
 
 int main() {
-    Queue* q = new Queue();
-    q->enq("We know");
-    q->enq("what we are,");
-    q->enq("but not");
-    q->enq("what we");
-    q->enq("may be.");
+    BST *root = new BST(10);
+    root->left = new BST(5);
+    root->left->left = new BST(2);
+    root->left->left->left = new BST(1);
+    root->left->right = new BST(5);
+    root->right = new BST(15);
+    root->right->left = new BST(13);
+    root->right->left->right = new BST(14);
+    root->right->right = new BST(22);
     
-    while (!q->empty()) {
-        cout << q->front()->val << " ";
-        q->deq();
-    }
+    cout << "Inorder: ";
+    root->inorderTraversal();
+    cout << "\n";
+    cout << "Preorder: ";
+    root->preorderTraversal();
+    cout << "\n";
+    cout << "Postorder: ";
+    root->postorderTraversal();
+    cout << "\n";
     
+    
+    root->insert(12);
+    root->inorderTraversal();
+    cout << "\n";
+    
+    root->remove(1);
+    root->remove(14);
+    root->remove(12);
+    root->inorderTraversal();
+    cout << "\n";
+    std::cout << "FIN\n";
     std::cout << "\nFIN\n";
     return 0;
 }
