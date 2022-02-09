@@ -64,20 +64,65 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-int main() {
-    DLL* dlist = new DLL();
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    void remove(string s);
+    Node* retrieve(string s);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < (int)s.size(); ++i)
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     
-    dlist->addBack("Words");
-    dlist->addBack("are easy,");
-    dlist->addBack("like the wind;");
-    dlist->addBack("faithful friends");
-    dlist->addBack("are hard");
-    dlist->addBack("to find.");
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    cout << hashVal << "\n";
+    HM[hashVal].addBack(s);
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
     
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
     }
+    return nullptr;
+}
+
+int main() {
+    HashMap* hm = new HashMap();
+    hm->insert("I like");
+    hm->insert("this place");
+    hm->insert("and could willingly");
+    hm->insert("waste my time");
+    hm->insert("in it.");
+    
+    cout << hm->retrieve("I like")->val << " ";
+    cout << hm->retrieve("this place")->val << " ";
+    cout << hm->retrieve("and could willingly")->val << " ";
+    cout << hm->retrieve("waste my time")->val << " ";
+    cout << hm->retrieve("in it.")->val << " ";
     
     std::cout << "\nFIN\n";
     return 0;
