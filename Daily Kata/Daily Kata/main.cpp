@@ -5,124 +5,84 @@
 
 using namespace std;
 
-struct Node {
-    string val;
-    Node* prev;
-    Node* next;
-};
-
-class DLL {
+class MaxHeap {
 public:
-    DLL();
-    ~DLL();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, string s);
-    void addFront(string s);
-    void addBack(string s);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
-private:
-    Node* head;
-    Node* tail;
+    MaxHeap(vector<int>& arr);
+    vector<int> heap;
+    vector<int> buildMaxHeap(vector<int>& arr);
+    void maxHeapify(int i, vector<int>& arr, int heapSize);
+    void insert(int e);
+    int extractMax();
 };
 
-DLL::DLL() {
-    head = new Node();
-    tail = new Node();
-    head->next = tail;
-    tail->prev = head;
-    head->val = "*";
-    tail->val = "*";
+MaxHeap::MaxHeap(vector<int>& arr) { heap = buildMaxHeap(arr); }
+vector<int> MaxHeap::buildMaxHeap(vector<int>& arr) {
+    int heapSize = (int)arr.size();
+    int parent = heapSize / 2 - 1;
+    for (int i = parent; i >= 0; --i) maxHeapify(i, arr, heapSize);
+    return arr;
 }
-DLL::~DLL() { while (!empty()) removeBack(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? nullptr : head->next; }
-Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
-void DLL::add(Node* v, string s) {
-    Node* u = new Node();
-    u->val = s;
+void MaxHeap::maxHeapify(int i, vector<int>& arr, int heapSize) {
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
     
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(string s) { add(head->next, s); }
-void DLL::addBack(string s) { add(tail, s); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
+    int largest = i;
+    if (l < heapSize && arr[l] > arr[largest]) largest = l;
+    if (r < heapSize && arr[r] > arr[largest]) largest = r;
+    
+    if (largest != i) {
+        swap(arr[largest], arr[i]);
+        maxHeapify(largest, arr, heapSize);
     }
 }
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() { if (!empty()) remove(tail->prev); }
-
-class HashMap {
-    enum { DEF_CAP = 100 };
-public:
-    HashMap(int cap = DEF_CAP);
-    int hash(string s);
-    void insert(string s);
-    void remove(string s);
-    Node* retrieve(string s);
-private:
-    DLL* HM;
-    int capacity;
-};
-
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(string s) {
-    int hash = 5381;
-    for (int i = 0; i < (int)s.size(); ++i)
-        hash = (((hash << 5) + hash) + s[i]) % capacity;
+void MaxHeap::insert(int e) {
+    heap.push_back(e);
+    int heapSize = (int)heap.size();
+    int parent = heapSize / 2 - 1;
+    int current = heapSize - 1;
     
-    return hash;
-}
-void HashMap::insert(string s) {
-    int hashVal = hash(s);
-    cout << hashVal << "\n";
-    HM[hashVal].addBack(s);
-}
-void HashMap::remove(string s) {
-    int hashVal = hash(s);
-    if (HM[hashVal].empty()) return;
-    
-    Node* node = retrieve(s);
-    if (node) HM[hashVal].remove(node);
-    return;
-}
-Node* HashMap::retrieve(string s) {
-    int hashVal = hash(s);
-    if (HM[hashVal].empty()) return nullptr;
-    
-    Node* node = HM[hashVal].front();
-    while (node) {
-        if (s.compare(node->val) == 0) return node;
-        node = node->next;
+    while (current > 0 && heap[current] > heap[parent]) {
+        swap(heap[current], heap[parent]);
+        current = parent;
+        parent = (current - 1) / 2;
     }
-    return nullptr;
+}
+int MaxHeap::extractMax() {
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
+    
+    int max = heap[0];
+    heap.pop_back();
+    heap[0] = heap[heapSize - 1];
+    maxHeapify(0, heap, heapSize - 1);
+    
+    return max;
 }
 
 int main() {
-    HashMap* hm = new HashMap();
-    hm->insert("I like");
-    hm->insert("this place");
-    hm->insert("and could willingly");
-    hm->insert("waste my time");
-    hm->insert("in it.");
+    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
+    MaxHeap maxHeap(arr);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    cout << hm->retrieve("I like")->val << " ";
-    cout << hm->retrieve("this place")->val << " ";
-    cout << hm->retrieve("and could willingly")->val << " ";
-    cout << hm->retrieve("waste my time")->val << " ";
-    cout << hm->retrieve("in it.")->val << " ";
+    printf("\nInsert: 22\n");
+    maxHeap.insert(22);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nInsert: 18\n");
+    maxHeap.insert(18);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
     
     std::cout << "\nFIN\n";
     return 0;
