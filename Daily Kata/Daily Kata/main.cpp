@@ -64,18 +64,47 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void push(string s);
+    void pop();
+private:
+    DLL DL;
+    int n;
+};
+
+Queue::Queue() : DL(), n(0) { }
+Queue::~Queue() { while (!empty()) pop(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return size() == 0; }
+Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
+void Queue::push(string s) {
+    DL.addBack(s);
+    n++;
+}
+void Queue::pop() {
+    if (!empty()) DL.removeFront();
+    n--;
+};
+
 int main() {
-    DLL* dlist = new DLL();
+    //
+    Queue* q = new Queue();
+    q->push("To-morrow,");
+    q->push("and to-morrow,");
+    q->push("and to-morrow,");
+    q->push("Creeps in");
+    q->push("this petty pace");
+    q->push("from day to day");
     
-    dlist->addBack("Stars,");
-    dlist->addBack("hide your fires;");
-    dlist->addBack("Let not light");
-    dlist->addBack("see my black");
-    dlist->addBack("and deep desires.");
-    
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->pop();
     }
     
     cout << "\nFIN\n";
