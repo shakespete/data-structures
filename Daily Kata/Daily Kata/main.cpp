@@ -7,59 +7,75 @@ using namespace std;
 
 struct Node {
     string val;
-    bool isWord;
-    vector<Node*> children{ vector<Node *>(26, nullptr) };
+    Node* prev;
+    Node* next;
 };
 
-class Trie {
+class DLL {
 public:
-    Trie();
-    void insert(string s);
-    bool query(string s);
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, string s);
+    void addFront(string s);
+    void addBack(string s);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
-    Node* root;
+    Node* head;
+    Node* tail;
 };
 
-Trie::Trie() { root = new Node(); }
-void Trie::insert(string s) {
-    Node* crawler = root;
-    
-    for (auto& c : s) {
-        cout << c - 'a' << ": " << c << "\n";
-        if (!crawler->children[c - 'a']) {
-            crawler->children[c - 'a'] = new Node();
-        }
-        crawler = crawler->children[c - 'a'];
-    }
-    crawler->isWord = true;
+DLL::DLL() {
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+    head->val = "*";
+    tail->val = "*";
 }
-bool Trie::query(string s) {
-    Node* crawler = root;
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
+void DLL::add(Node* v, string s) {
+    Node* u = new Node();
+    u->val = s;
     
-    for (auto& c : s) {
-        if (!crawler->children[c - 'a']) return false;
-        crawler = crawler->children[c - 'a'];
-    }
-    return crawler->isWord;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
 }
+void DLL::addFront(string s) { add(head->next, s); }
+void DLL::addBack(string s) { add(tail, s); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
+    }
+}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    Trie* trie = new Trie();
-         
+    DLL* dlist = new DLL();
+    dlist->addBack("The lady");
+    dlist->addBack("doth");
+    dlist->addBack("protest");
+    dlist->addBack("too much,");
+    dlist->addBack("methinks");
     
-    trie->insert("all");
-    trie->insert("that");
-    trie->insert("glisters");
-    trie->insert("is");
-    trie->insert("not");
-    trie->insert("gold");
-    
-    cout << trie->query("all") << "\n";
-    cout << trie->query("that") << "\n";
-    cout << trie->query("glitters") << "\n";
-    cout << trie->query("is") << "\n";
-    cout << trie->query("not") << "\n";
-    cout << trie->query("gold") << "\n";
+    while (!dlist->empty()) {
+        cout << dlist->front()->val << " ";
+        dlist->removeFront();
+    }
     
     std::cout << "\nFIN\n";
     return 0;
