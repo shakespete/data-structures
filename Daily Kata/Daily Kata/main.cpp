@@ -1,87 +1,83 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <string>
 #include <vector>
 
 using namespace std;
 
-class MaxHeap {
-public:
-    MaxHeap(vector<int>& arr);
-    vector<int> heap;
-    vector<int> buildMaxHeap(vector<int>& arr);
-    void maxHeapify(int i, vector<int>& arr, int heapSize);
-    void insert(int e);
-    int extractMax();
+struct Node {
+    string val;
+    Node* prev;
+    Node* next;
 };
 
-MaxHeap::MaxHeap(vector<int>& arr) { heap = buildMaxHeap(arr); }
-vector<int> MaxHeap::buildMaxHeap(vector<int>& arr) {
-    int heapSize = (int)arr.size();
-    int parent = heapSize / 2 - 1;
-    for (int i = parent; i >= 0; --i) maxHeapify(i, arr, heapSize);
-    return arr;
+class DLL {
+public:
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* u, string s);
+    void addFront(string s);
+    void addBack(string s);
+    void remove(Node* u);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
+};
+
+DLL::DLL() {
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+    head->val = "*";
+    tail->val = "*";
 }
-void MaxHeap::maxHeapify(int i, vector<int>& arr, int heapSize) {
-    int l = 2 * i + 1;
-    int r = 2 * i + 2;
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
+void DLL::add(Node* v, string s) {
+    Node* u = new Node();
+    u->val = s;
     
-    int largest = i;
-    if (l < heapSize && arr[l] > arr[largest]) largest = l;
-    if (r < heapSize && arr[r] > arr[largest]) largest = r;
-    
-    if (largest != i) {
-        swap(arr[largest], arr[i]);
-        maxHeapify(largest, arr, heapSize);
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(string s) { add(head->next, s); }
+void DLL::addBack(string s) { add(tail, s); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
-void MaxHeap::insert(int e) {
-    heap.push_back(e);
-    int heapSize = (int)heap.size();
-    int parent = heapSize / 2 - 1;
-    int current = heapSize - 1;
-    
-    while (current > 0 && heap[current] > heap[parent]) {
-        swap(heap[current], heap[parent]);
-        current = parent;
-        parent = (current - 1) / 2;
-    }
-}
-int MaxHeap::extractMax() {
-    int heapSize = (int)heap.size();
-    if (heapSize == 0) return -1;
-    
-    int max = heap[0];
-    heap[0] = heap[heapSize - 1];
-    heap.pop_back();
-    maxHeapify(0, heap, heapSize - 1);
-    
-    return max;
-}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
-    MaxHeap maxHeap(arr);
-    for (int i : maxHeap.heap) printf("%d ", i);
+    DLL* dlist = new DLL();
+    dlist->addBack("Cowards die ");
+    dlist->addBack("many times");
+    dlist->addBack("before their deaths;");
+    dlist->addBack("the valiant");
+    dlist->addBack("never taste of death");
+    dlist->addBack("but once.");
     
-    printf("\nInsert: 22\n");
-    maxHeap.insert(22);
-    for (int i : maxHeap.heap) printf("%d ", i);
+    while (!dlist->empty()) {
+        cout << dlist->front()->val << " ";
+        dlist->removeFront();
+    }
     
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nInsert: 18\n");
-    maxHeap.insert(18);
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
-    
-    printf("\nExtract Max: %d\n", maxHeap.extractMax());
-    for (int i : maxHeap.heap) printf("%d ", i);
     std::cout << "\nFIN\n";
     return 0;
 }
