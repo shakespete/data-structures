@@ -64,19 +64,71 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-int main() {
-    DLL* dlist = new DLL();
-    dlist->addBack("Cowards die ");
-    dlist->addBack("many times");
-    dlist->addBack("before their deaths;");
-    dlist->addBack("the valiant");
-    dlist->addBack("never taste of death");
-    dlist->addBack("but once.");
-    
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    void remove(string s);
+    Node* retrieve(string s);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    HM[hashVal].addBack(s);
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
+    }
+    return nullptr;
+}
+
+int main() {
+    HashMap* hm = new HashMap();
+    hm->insert("Be not afraid");
+    hm->insert("of greatness.");
+    hm->insert("Some are born great,");
+    hm->insert("some achieve greatness,");
+    hm->insert("and others have greatness");
+    hm->insert("thrust upon them.");
+    
+    cout << hm->retrieve("Be not afraid")->val << " ";
+    cout << hm->retrieve("of greatness.")->val << " ";
+    cout << hm->retrieve("Some are born great,")->val << " ";
+    cout << hm->retrieve("some achieve greatness,")->val << " ";
+    cout << hm->retrieve("and others have greatness")->val << " ";
+    cout << hm->retrieve("thrust upon them.")->val << "\n";
+    
+    hm->remove("Be not afraid");
+    Node* node = hm->retrieve("Be not afraid");
+    if (!node) cout << "0\n";
+    
     
     std::cout << "\nFIN\n";
     return 0;
