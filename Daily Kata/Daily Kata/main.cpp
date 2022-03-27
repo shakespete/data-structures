@@ -64,20 +64,49 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-int main() {
-    DLL* dlist = new DLL();
-    dlist->addBack("Good night,");
-    dlist->addBack("good night!");
-    dlist->addBack("Parting is such");
-    dlist->addBack("sweet sorrow,");
-    dlist->addBack("that I shall say");
-    dlist->addBack("good night");
-    dlist->addBack("till it be morrow.");
-    
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(string s);
+    void deq();
+private:
+    DLL DL;
+    int n;
+};
+
+Queue::Queue() : DL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
+void Queue::enq(string s) {
+    DL.addBack(s);
+    n++;
+}
+void Queue::deq() {
+    if (!empty()) {
+        DL.removeFront();
+        n--;
     }
+}
+
+int main() {
+    Queue* q = new Queue();
+    q->enq("How sharper");
+    q->enq("than a");
+    q->enq("serpent’s tooth");
+    q->enq("it is to have");
+    q->enq("a thankless child!");
+    
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->deq();
+    }
+    
     cout << "\nFIN\n";
     return 0;
 }
