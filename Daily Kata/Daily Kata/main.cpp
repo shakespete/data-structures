@@ -64,48 +64,68 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-class Queue {
+class HashMap {
+    enum { DEF_CAP = 100 };
 public:
-    Queue();
-    ~Queue();
-    int size() const;
-    bool empty() const;
-    Node* front() const;
-    void enq(string s);
-    void deq();
+    HashMap(int cap = DEF_CAP);
+    int hash(string s) const;
+    void insert(string s);
+    void remove(string s);
+    Node* retrieve(string s);
 private:
-    DLL DL;
-    int n;
+    DLL* HM;
+    int capacity;
 };
 
-Queue::Queue() : DL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
-void Queue::enq(string s) {
-    DL.addBack(s);
-    n++;
-}
-void Queue::deq() {
-    if (!empty()) {
-        DL.removeFront();
-        n--;
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string s) const {
+    int hash = 5381;
+    for (int i = 0; i < (int)s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    HM[hashVal].addBack(s);
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+    return;
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
+    }
+    return nullptr;
 }
 
 int main() {
-    Queue* q = new Queue();
-    q->enq("How sharper");
-    q->enq("than a");
-    q->enq("serpent’s tooth");
-    q->enq("it is to have");
-    q->enq("a thankless child!");
+    HashMap* hm = new HashMap();
     
-    while (!q->empty()) {
-        cout << q->front()->val << " ";
-        q->deq();
-    }
+    hm->insert("a stage,");
+    hm->insert("and women");
+    hm->insert("And all");
+    hm->insert("merely players");
+    hm->insert("the men");
+    hm->insert("All the world's");
+    
+    
+    cout << hm->retrieve("All the world's")->val << " ";
+    cout << hm->retrieve("a stage,")->val << "\n";
+    cout << hm->retrieve("And all")->val << " ";
+    cout << hm->retrieve("the men")->val << " ";
+    cout << hm->retrieve("and women")->val << " ";
+    cout << hm->retrieve("merely players")->val << " ";
     
     cout << "\nFIN\n";
     return 0;
