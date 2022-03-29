@@ -5,127 +5,54 @@
 
 using namespace std;
 
-struct Node {
-    string val;
-    Node* prev;
-    Node* next;
-};
-
-class DLL {
+class Stack {
+    enum { DEF_CAP = 3 };
 public:
-    DLL();
-    ~DLL();
+    Stack(int cap = DEF_CAP);
+    ~Stack();
+    int size() const;
     bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, string s);
-    void addFront(string s);
-    void addBack(string s);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
+    string top() const;
+    void push(string s);
+    void pop();
 private:
-    Node* head;
-    Node* tail;
-};
-
-DLL::DLL() {
-    head = new Node();
-    tail = new Node();
-    head->next = tail;
-    tail->prev = head;
-    head->val = "*";
-    tail->val = "*";
-}
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? nullptr : head->next; }
-Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
-void DLL::add(Node* v, string s) {
-    Node* u = new Node();
-    u->val = s;
-    
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(string s) { add(head->next, s); }
-void DLL::addBack(string s) { add(tail, s); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
-    }
-}
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() { if (!empty()) remove(tail->prev); }
-
-class HashMap {
-    enum { DEF_CAP = 100 };
-public:
-    HashMap(int cap = DEF_CAP);
-    int hash(string s) const;
-    void insert(string s);
-    void remove(string s);
-    Node* retrieve(string s);
-private:
-    DLL* HM;
+    string* S;
+    int t;
     int capacity;
 };
 
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(string s) const {
-    int hash = 5381;
-    for (int i = 0; i < (int)s.size(); ++i) {
-        hash = (((hash << 5) + hash) + s[i]) % capacity;
+Stack::Stack(int cap) : S(new string[cap]), t(-1), capacity(cap) { }
+Stack::~Stack() { while (!empty()) pop(); }
+int Stack::size() const { return t + 1; }
+bool Stack::empty() const { return size() == 0; }
+string Stack::top() const { return empty() ? "Empty" : S[t]; }
+void Stack::push(string s) {
+    if (size() == capacity) {
+        string* T = new string[capacity * 2];
+        for (int i = 0; i < capacity; ++i) T[i] = S[i];
+        S = T;
+        capacity *= 2;
     }
-    return hash;
+    S[++t] = s;
 }
-void HashMap::insert(string s) {
-    int hashVal = hash(s);
-    HM[hashVal].addBack(s);
-}
-void HashMap::remove(string s) {
-    int hashVal = hash(s);
-    if (HM[hashVal].empty()) return;
-    
-    Node* node = retrieve(s);
-    if (node) HM[hashVal].remove(node);
-    return;
-}
-Node* HashMap::retrieve(string s) {
-    int hashVal = hash(s);
-    if (HM[hashVal].empty()) return nullptr;
-    
-    Node* node = HM[hashVal].front();
-    while (node) {
-        if (s.compare(node->val) == 0) return node;
-        node = node->next;
-    }
-    return nullptr;
-}
+void Stack::pop() { if (!empty()) --t; }
 
 int main() {
-    HashMap* hm = new HashMap();
+    //
+    Stack* st = new Stack();
+    st->push("without deserving.");
+    st->push("and lost");
+    st->push("without merit,");
+    st->push("oft got");
+    st->push("false imposition;");
+    st->push("and most");
+    st->push("is an idle");
+    st->push("Reputation");
     
-    hm->insert("a stage,");
-    hm->insert("and women");
-    hm->insert("And all");
-    hm->insert("merely players");
-    hm->insert("the men");
-    hm->insert("All the world's");
-    
-    
-    cout << hm->retrieve("All the world's")->val << " ";
-    cout << hm->retrieve("a stage,")->val << "\n";
-    cout << hm->retrieve("And all")->val << " ";
-    cout << hm->retrieve("the men")->val << " ";
-    cout << hm->retrieve("and women")->val << " ";
-    cout << hm->retrieve("merely players")->val << " ";
+    while (!st->empty()) {
+        cout << st->top() << " ";
+        st->pop();
+    }
     
     cout << "\nFIN\n";
     return 0;
