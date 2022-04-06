@@ -6,61 +6,80 @@
 using namespace std;
 
 struct Node {
-    unordered_map<char, Node*> children;
-    bool isEnd;
+    string val;
+    Node* prev;
+    Node* next;
 };
 
-class Trie {
+class DLL {
 public:
-    Node* root;
-    Trie();
-    void insert(string s);
-    bool query(string s);
+    DLL();
+    ~DLL();
+    bool empty() const;
+    Node* front() const;
+    Node* back() const;
+    void add(Node* v, string s);
+    void addFront(string s);
+    void addBack(string s);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
+private:
+    Node* head;
+    Node* tail;
 };
 
-Trie::Trie() { root = new Node(); }
-void Trie::insert(string s) {
-    Node* cursor = root;
-    
-    for (auto letter : s) {
-        if (cursor->children.find(letter) == cursor->children.end()) {
-            Node* node = new Node();
-            cursor->children[letter] = node;
-        }
-        cursor = cursor->children[letter];
-    }
-    cursor->isEnd = true;
+DLL::DLL() {
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+    head->val = "*";
+    tail->val = "*";
 }
-bool Trie::query(string s) {
-    Node* cursor = root;
-    
-    for (auto letter : s) {
-        if (cursor->children.find(letter) == cursor->children.end()) return false;
-        cursor = cursor->children[letter];
-    }
-    if (cursor->isEnd) return true;
-    return false;
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
+void DLL::add(Node* v, string s) {
+    Node* u = new Node();
+    u->val = s;
+    u->next = v;
+    u->prev = v->prev;
+    v->prev->next = u;
+    v->prev = u;
 }
+void DLL::addFront(string s) { add(head->next, s); }
+void DLL::addBack(string s) { add(tail, s); }
+void DLL::remove(Node* v) {
+    if (!empty()) {
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
+    }
+}
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
 int main() {
-    Trie* t = new Trie();
-    t->insert("Brevity");
-    t->insert("is");
-    t->insert("the");
-    t->insert("soul");
-    t->insert("of");
-    t->insert("wit");
+    DLL* dlist = new DLL();
     
-    cout << t->query("Brevity") << "\n";
-    cout << t->query("is") << "\n";
-    cout << t->query("the") << "\n";
-    cout << t->query("soul") << "\n";
-    cout << t->query("of") << "\n";
-    cout << t->query("wit") << "\n";
-    cout << t->query("souls") << "\n";
+    dlist->addBack("We are");
+    dlist->addBack("such stuff\n");
+    dlist->addBack("As dreams");
+    dlist->addBack("are made on;\n");
+    dlist->addBack("and our");
+    dlist->addBack("little life\n");
+    dlist->addBack("Is rounded");
+    dlist->addBack("with a sleep");
     
+    while (!dlist->empty()) {
+        cout << dlist->front()->val << " ";
+        dlist->removeFront();
+    }
     
-    std::cout << "FIN\n";
-    
+    std::cout << "\nFIN\n";
     return 0;
 }
