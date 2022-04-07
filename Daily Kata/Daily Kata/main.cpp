@@ -63,21 +63,49 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void push(string s);
+    void pop();
+private:
+    DLL DL;
+    int n;
+};
+
+Queue::Queue() : DL(), n(0) {}
+Queue::~Queue() { while (!empty()) pop(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
+void Queue::push(string s) {
+    DL.addBack(s);
+    ++n;
+}
+void Queue::pop() {
+    if (!empty()) {
+        DL.removeFront();
+        --n;
+    }
+}
+
 int main() {
-    DLL* dlist = new DLL();
+    Queue* q = new Queue();
+    q->push("How poor");
+    q->push("are they");
+    q->push("that have");
+    q->push("not patience!");
+    q->push("What wound");
+    q->push("did ever heal");
+    q->push("but by degrees?");
     
-    dlist->addBack("We are");
-    dlist->addBack("such stuff\n");
-    dlist->addBack("As dreams");
-    dlist->addBack("are made on;\n");
-    dlist->addBack("and our");
-    dlist->addBack("little life\n");
-    dlist->addBack("Is rounded");
-    dlist->addBack("with a sleep");
-    
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->pop();
     }
     
     std::cout << "\nFIN\n";
