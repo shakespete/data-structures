@@ -63,50 +63,69 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-class Queue {
+class HashMap {
+    enum { DEF_CAP = 100 };
 public:
-    Queue();
-    ~Queue();
-    int size() const;
-    bool empty() const;
-    Node* front() const;
-    void push(string s);
-    void pop();
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    Node* retrieve(string s);
+    void remove(string s);
 private:
-    DLL DL;
-    int n;
+    DLL* HM;
+    int capacity;
 };
 
-Queue::Queue() : DL(), n(0) {}
-Queue::~Queue() { while (!empty()) pop(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
-void Queue::push(string s) {
-    DL.addBack(s);
-    ++n;
-}
-void Queue::pop() {
-    if (!empty()) {
-        DL.removeFront();
-        --n;
+HashMap::HashMap(int cap) :  HM(new DLL[cap]), capacity(cap) { };
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < (int)s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    HM[hashVal].addBack(s);
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
+    }
+    return nullptr;
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = HM[hashVal].front();
+    if (node) HM[hashVal].remove(node);
+    return;
 }
 
 int main() {
-    Queue* q = new Queue();
-    q->push("How poor");
-    q->push("are they");
-    q->push("that have");
-    q->push("not patience!");
-    q->push("What wound");
-    q->push("did ever heal");
-    q->push("but by degrees?");
+    HashMap* hm = new HashMap();
+    hm->insert("Expectation");
+    hm->insert("is the");
+    hm->insert("root");
+    hm->insert("of all");
+    hm->insert("heartache");
     
-    while (!q->empty()) {
-        cout << q->front()->val << " ";
-        q->pop();
-    }
+    cout << hm->retrieve("Expectation")->val << " ";
+    cout << hm->retrieve("is the")->val << " ";
+    cout << hm->retrieve("root")->val << " ";
+    cout << hm->retrieve("of all")->val << " ";
+    cout << hm->retrieve("heartache")->val;
+    
+    hm->remove("Expectation");
+    Node* node = hm->retrieve("Expectation");
+    if (!node) cout << "\n-1";
+    
     
     std::cout << "\nFIN\n";
     return 0;
