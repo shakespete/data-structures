@@ -62,18 +62,49 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front();
+    void push(string s);
+    void pop();
+private:
+    DLL DL;
+    int n;
+};
+
+Queue::Queue() : DL(), n(0) { }
+Queue::~Queue() { while (!empty()) pop(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() { return empty() ? nullptr : DL.front(); }
+void Queue::push(string s) {
+    DL.addBack(s);
+    ++n;
+}
+void Queue::pop() {
+    if (!empty()) {
+        DL.removeFront();
+        --n;
+    }
+}
+
 int main() {
-    DLL* dlist = new DLL();
-    dlist->addBack("O, beware,");
-    dlist->addBack("my lord,");
-    dlist->addBack("of jealousy;");
-    dlist->addBack("it is the green-ey’d monster,");
-    dlist->addBack("which doth mock");
-    dlist->addBack("the meat it feeds on.");
+    Queue* q = new Queue();
     
-    while (!dlist->empty()) {
-        cout << dlist->front()->val << " ";
-        dlist->removeFront();
+    q->push("One touch");
+    q->push("of nature");
+    q->push("makes");
+    q->push("the whole");
+    q->push("world kin.");
+    
+    
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->pop();
     }
     
     std::cout << "\nFIN\n";
