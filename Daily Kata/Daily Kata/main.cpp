@@ -1,56 +1,86 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <string>
 #include <vector>
 
 using namespace std;
 
-class Stack {
-    enum { DEF_CAP = 2 };
+class MaxHeap {
 public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
-    bool empty() const;
-    string top() const;
-    void push(string s);
-    void pop();
-private:
-    string* S;
-    int t;
-    int capacity;
+    MaxHeap(vector<int>& vec);
+    vector<int> heap;
+    vector<int> buildHeap(vector<int>& vec);
+    void maxHeapify(int i, vector<int>& vec, int heapSize);
+    void insert(int val);
+    int extractMax();
 };
 
-Stack::Stack(int cap) : S(new string[cap]), t(-1), capacity(cap) { }
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return size() == 0; }
-string Stack::top() const { return empty() ? "*" : S[t]; }
-void Stack::push(string s) {
-    if (size() == capacity) {
-        string* T = new string[capacity * 2];
-        for (int i = 0; i < capacity; ++i) T[i] = S[i];
-        S = T;
-        delete[] T;
-        capacity *= 2;
-    }
-    S[++t] = s;
+MaxHeap::MaxHeap(vector<int>& vec) { heap = buildHeap(vec); }
+vector<int> MaxHeap::buildHeap(vector<int>& vec) {
+    int heapSize = (int)vec.size();
+    int parent = heapSize / 2 - 1;
+    for (int i = parent; i >= 0; --i) maxHeapify(i, vec, heapSize);
+    return vec;
 }
-void Stack::pop() { if (!empty()) --t; }
+void MaxHeap::maxHeapify(int i, vector<int>& vec, int heapSize) {
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    
+    int largest = i;
+    if (l < heapSize && vec[l] > vec[largest] ) largest = l;
+    if (r < heapSize && vec[r] > vec[largest]) largest = r;
+    
+    if (largest != i) {
+        swap(vec[largest], vec[i]);
+        maxHeapify(largest, vec, heapSize);
+    }
+}
+void MaxHeap::insert(int val) {
+    heap.push_back(val);
+    int heapSize = (int)heap.size();
+    int parent = heapSize / 2 - 1;
+    int current = heapSize - 1;
+    
+    while (current > 0 && heap[current] > heap[parent]) {
+        swap(heap[current], heap[parent]);
+        current = parent;
+        parent = (current - 1) / 2;
+    }
+}
+int MaxHeap::extractMax() {
+    int heapSize = (int)heap.size();
+    if (heapSize == 0) return -1;
+    
+    int max = heap[0];
+    heap[0] = heap[heapSize - 1];
+    heap.pop_back();
+    maxHeapify(0, heap, heapSize - 1);
+    return max;
+}
 
 int main() {
-    Stack* st = new Stack();
+    vector<int> arr = { 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 };
+    MaxHeap maxHeap(arr);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    st->push("I lost myself\n");
-    st->push("I lost myself, ");
-    st->push("for a minute there\n");
-    st->push("Phew, ");
+    printf("\nInsert: 22\n");
+    maxHeap.insert(22);
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    while (!st->empty()) {
-        cout << st->top();
-        st->pop();
-    }
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
     
-    std::cout << "FIN\n";
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nInsert: 18\n");
+    maxHeap.insert(18);
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    
+    printf("\nExtract Max: %d\n", maxHeap.extractMax());
+    for (int i : maxHeap.heap) printf("%d ", i);
+    std::cout << "\nFIN\n";
     return 0;
 }
