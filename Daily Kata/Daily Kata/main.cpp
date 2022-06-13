@@ -64,18 +64,51 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+class Queue {
+public:
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void enq(string s);
+    void deq();
+private:
+    DLL DL;
+    int n;
+};
+
+Queue::Queue() : DL(), n(0) { }
+Queue::~Queue() { while (!empty()) deq(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0;}
+Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
+void Queue::enq(string s) {
+    DL.addBack(s);
+    ++n;
+}
+void Queue::deq() {
+    if (!empty()) {
+        DL.removeFront();
+        --n;
+    }
+}
+
 int main() {
-    DLL* dlist = new DLL();
+    Queue* q = new Queue();
     
-    dlist->addBack("Stars shining ");
-    dlist->addBack("bright above you\n");
-    dlist->addBack("Night breezes ");
-    dlist->addBack("seem to whisper ");
-    dlist->addBack("'I love you'");
+    q->enq("Now then,");
+    q->enq("when you lose");
+    q->enq("sight of the conventionality");
+    q->enq("of these things");
+    q->enq("because you are absorbed");
+    q->enq("in details");
+    q->enq("and have become unconscious");
+    q->enq("of the totality");
     
-    while (!dlist->empty()) {
-        cout << dlist->front()->val;
-        dlist->removeFront();
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->deq();
     }
     
     cout << "\n";
