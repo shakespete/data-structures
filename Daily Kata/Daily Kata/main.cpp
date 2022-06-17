@@ -64,54 +64,65 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-class Queue {
+class HashMap {
+    enum { DEF_CAP = 100 };
 public:
-    Queue();
-    ~Queue();
-    int size() const;
-    bool empty() const;
-    Node* front() const;
-    void enq(string s);
-    void deq();
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    Node* retrieve(string s);
+    void remove(string s);
 private:
-    DLL DL;
-    int n;
+    DLL* HM;
+    int capacity;
 };
 
-Queue::Queue() : DL(), n(0) { }
-Queue::~Queue() { while (!empty()) deq(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0;}
-Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
-void Queue::enq(string s) {
-    DL.addBack(s);
-    ++n;
-}
-void Queue::deq() {
-    if (!empty()) {
-        DL.removeFront();
-        --n;
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { };
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < (int)s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    HM[hashVal].addBack(s);
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
+    }
+    return nullptr;
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+    return;
 }
 
 int main() {
-    Queue* q = new Queue();
+    HashMap* hm = new HashMap();
+    hm->insert("Hell");
+    hm->insert("is empty");
+    hm->insert("and all");
+    hm->insert("the devils");
+    hm->insert("are here.");
     
-    q->enq("Now then,");
-    q->enq("when you lose");
-    q->enq("sight of the conventionality");
-    q->enq("of these things");
-    q->enq("because you are absorbed");
-    q->enq("in details");
-    q->enq("and have become unconscious");
-    q->enq("of the totality");
+    cout << hm->retrieve("Hell")->val << " ";
+    cout << hm->retrieve("is empty")->val << " ";
+    cout << hm->retrieve("and all")->val << " ";
+    cout << hm->retrieve("the devils")->val << " ";
+    cout << hm->retrieve("are here.")->val << "\n";
     
-    while (!q->empty()) {
-        cout << q->front()->val << " ";
-        q->deq();
-    }
-    
-    cout << "\n";
     std::cout << "FIN\n";
     return 0;
 }
