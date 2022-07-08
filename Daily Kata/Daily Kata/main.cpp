@@ -64,21 +64,67 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-int main() {
-    DLL* dlist = new DLL();
-    
-    dlist->addBack("Me, ");
-    dlist->addBack("poor man, ");
-    dlist->addBack("my library ");
-    dlist->addBack("Was dukedom ");
-    dlist->addBack("large enough.");
-    
-    while (!dlist->empty()) {
-        cout << dlist->front()->val;
-        dlist->removeFront();
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    Node* retrieve(string s);
+    void remove(string s);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < (int)s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
     }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    HM[hashVal].addBack(s);
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
     
-    cout << "\n";
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
+    }
+    return nullptr;
+}
+void HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return;
+    
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+    return;
+}
+
+int main() {
+    HashMap* hm = new HashMap();
+    
+    hm->insert("with strange");
+    hm->insert("acquaints");
+    hm->insert("bedfellows");
+    hm->insert("Misery");
+    hm->insert("a man");
+    
+    
+    cout << hm->retrieve("Misery")->val << " ";
+    cout << hm->retrieve("acquaints")->val << " ";
+    cout << hm->retrieve("a man")->val << " ";
+    cout << hm->retrieve("with strange")->val << " ";
+    cout << hm->retrieve("bedfellows")->val << ".";
+    
     std::cout << "\nFIN\n";
     return 0;
 }
