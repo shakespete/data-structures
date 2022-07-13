@@ -64,66 +64,49 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
-class HashMap {
-    enum { DEF_CAP = 100 };
+class Queue {
 public:
-    HashMap(int cap = DEF_CAP);
-    int hash(string s);
-    void insert(string s);
-    Node* retrieve(string s);
-    void remove(string s);
+    Queue();
+    ~Queue();
+    int size() const;
+    bool empty() const;
+    Node* front() const;
+    void push(string s);
+    void pop();
 private:
-    DLL* HM;
-    int capacity;
+    DLL DL;
+    int n;
 };
 
-HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
-int HashMap::hash(string s) {
-    int hash = 5381;
-    for (int i = 0; i < (int)s.size(); ++i) {
-        hash = (((hash << 5) + hash) + s[i]) % capacity;
+Queue::Queue() : DL(), n(0) { }
+Queue::~Queue() { while (!empty()) pop(); }
+int Queue::size() const { return n; }
+bool Queue::empty() const { return n == 0; }
+Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
+void Queue::push(string s) {
+    DL.addBack(s);
+    ++n;
+}
+void Queue::pop() {
+    if (!empty()) {
+        DL.removeFront();
+        --n;
     }
-    return hash;
-}
-void HashMap::insert(string s) {
-    int hashVal = hash(s);
-    HM[hashVal].addBack(s);
-}
-Node* HashMap::retrieve(string s) {
-    int hashVal = hash(s);
-    if (HM[hashVal].empty()) return nullptr;
-    
-    Node* node = HM[hashVal].front();
-    while (node) {
-        if (s.compare(node->val) == 0) return node;
-        node = node->next;
-    }
-    return nullptr;
-}
-void HashMap::remove(string s) {
-    int hashVal = hash(s);
-    if (HM[hashVal].empty()) return;
-    
-    Node* node = retrieve(s);
-    if (node) HM[hashVal].remove(node);
-    return;
 }
 
 int main() {
-    HashMap* hm = new HashMap();
+    Queue* q = new Queue();
     
-    hm->insert("with strange");
-    hm->insert("acquaints");
-    hm->insert("bedfellows");
-    hm->insert("Misery");
-    hm->insert("a man");
+    q->push("This thing");
+    q->push("of darkness");
+    q->push("I acknowledge");
+    q->push("mine.");
     
+    while (!q->empty()) {
+        cout << q->front()->val << " ";
+        q->pop();
+    }
     
-    cout << hm->retrieve("Misery")->val << " ";
-    cout << hm->retrieve("acquaints")->val << " ";
-    cout << hm->retrieve("a man")->val << " ";
-    cout << hm->retrieve("with strange")->val << " ";
-    cout << hm->retrieve("bedfellows")->val << ".";
     
     std::cout << "\nFIN\n";
     return 0;
