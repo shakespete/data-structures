@@ -5,108 +5,54 @@
 
 using namespace std;
 
-struct Node {
-    string val;
-    Node* prev;
-    Node* next;
-};
-
-class DLL {
+class Stack {
+    enum { DEF_CAP = 2 };
 public:
-    DLL();
-    ~DLL();
-    bool empty() const;
-    Node* front() const;
-    Node* back() const;
-    void add(Node* v, string s);
-    void addFront(string s);
-    void addBack(string s);
-    void remove(Node* v);
-    void removeFront();
-    void removeBack();
-private:
-    Node* head;
-    Node* tail;
-};
-
-DLL::DLL() {
-    head = new Node();
-    tail = new Node();
-    head->next = tail;
-    tail->prev = head;
-    head->val = "*";
-    tail->val = "*";
-}
-DLL::~DLL() { while (!empty()) removeFront(); }
-bool DLL::empty() const { return head->next == tail; }
-Node* DLL::front() const { return empty() ? nullptr : head->next; }
-Node* DLL::back() const { return empty() ? nullptr : tail->prev; }
-void DLL::add(Node* v, string s) {
-    Node* u = new Node();
-    u->val = s;
-    
-    u->next = v;
-    u->prev = v->prev;
-    v->prev->next = u;
-    v->prev = u;
-}
-void DLL::addFront(string s) { add(head->next, s); }
-void DLL::addBack(string s) { add(tail, s); }
-void DLL::remove(Node* v) {
-    if (!empty()) {
-        Node* u = v->prev;
-        Node* w = v->next;
-        u->next = w;
-        w->prev = u;
-        delete v;
-    }
-}
-void DLL::removeFront() { if (!empty()) remove(head->next); }
-void DLL::removeBack() { if (!empty()) remove(tail->prev); }
-
-class Queue {
-public:
-    Queue();
-    ~Queue();
+    Stack(int cap = DEF_CAP);
+    ~Stack();
     int size() const;
     bool empty() const;
-    Node* front() const;
+    string top() const;
     void push(string s);
     void pop();
 private:
-    DLL DL;
-    int n;
+    string* S;
+    int t;
+    int capacity;
 };
 
-Queue::Queue() : DL(), n(0) { }
-Queue::~Queue() { while (!empty()) pop(); }
-int Queue::size() const { return n; }
-bool Queue::empty() const { return n == 0; }
-Node* Queue::front() const { return empty() ? nullptr : DL.front(); }
-void Queue::push(string s) {
-    DL.addBack(s);
-    ++n;
+Stack::Stack(int cap) : S(new string[cap]), t(-1), capacity(cap) { }
+Stack::~Stack() { while (!empty()) pop(); }
+int Stack::size() const { return t + 1; }
+bool Stack::empty() const { return size() == 0; }
+string Stack::top() const { return empty() ? "*" : S[t]; }
+void Stack::push(string s) {
+    if (size() == capacity) {
+        string* T = new string[capacity * 2];
+        for (int i = 0; i < capacity; ++i) T[i] = S[i];
+        S = T;
+        capacity *= 2;
+    }
+    S[++t] = s;
 }
-void Queue::pop() {
+void Stack::pop() {
     if (!empty()) {
-        DL.removeFront();
-        --n;
+        --t;
     }
 }
 
 int main() {
-    Queue* q = new Queue();
+    Stack* st = new Stack();
+    st->push("so miserable.");
+    st->push("if it weren't");
+    st->push("so good,");
+    st->push("could be");
+    st->push("Life");
     
-    q->push("This thing");
-    q->push("of darkness");
-    q->push("I acknowledge");
-    q->push("mine.");
-    
-    while (!q->empty()) {
-        cout << q->front()->val << " ";
-        q->pop();
+    while (!st->empty()) {
+        cout << st->top() << " ";
+        st->pop();
     }
-    
     
     std::cout << "\nFIN\n";
     return 0;
