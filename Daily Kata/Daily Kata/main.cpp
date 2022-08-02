@@ -5,55 +5,55 @@
 
 using namespace std;
 
-class Stack {
-    enum { DEF_CAP = 2 };
-public:
-    Stack(int cap = DEF_CAP);
-    ~Stack();
-    int size() const;
-    bool empty() const;
-    string top() const;
-    void push(string s);
-    void pop();
-private:
-    string* S;
-    int t;
-    int capacity;
+struct Node {
+    string val;
+    Node* next;
 };
 
-Stack::Stack(int cap) : S(new string[cap]), t(-1), capacity(cap) { }
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return size() == 0; }
-string Stack::top() const { return empty() ? "*" : S[t]; }
-void Stack::push(string s) {
-    if (size() == capacity) {
-        string* T = new string[capacity * 2];
-        for (int i = 0; i < capacity; ++i) T[i] = S[i];
-        S = T;
-        capacity *= 2;
-    }
-    S[++t] = s;
+class LinkedList {
+public:
+    LinkedList();
+    ~LinkedList();
+    bool empty() const;
+    Node* front() const;
+    void add(string s);
+    void remove();
+private:
+    Node* head;
+};
+
+LinkedList::LinkedList() : head(nullptr) { }
+LinkedList::~LinkedList() { while (!empty()) remove(); }
+bool LinkedList::empty() const { return head == nullptr; }
+Node* LinkedList::front() const { return empty() ? nullptr : head; }
+void LinkedList::add(string s) {
+    Node* v = new Node();
+    v->val = s;
+    v->next = head;
+    head = v;
 }
-void Stack::pop() {
+void LinkedList::remove() {
     if (!empty()) {
-        --t;
+        Node* old = head;
+        head = old->next;
+        delete old;
     }
 }
 
 int main() {
-    Stack* st = new Stack();
-    st->push("so miserable.");
-    st->push("if it weren't");
-    st->push("so good,");
-    st->push("could be");
-    st->push("Life");
+    LinkedList* ll = new LinkedList();
+//
+//
+    ll->add("you've borrowed");
+    ll->add("With the words");
+    ll->add("my sorrows\n");
+    ll->add("you fill");
+    ll->add("So why do");
     
-    while (!st->empty()) {
-        cout << st->top() << " ";
-        st->pop();
+    while (!ll->empty()) {
+        cout << ll->front()->val << " ";
+        ll->remove();
     }
-    
     std::cout << "\nFIN\n";
     return 0;
 }
