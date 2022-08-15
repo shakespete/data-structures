@@ -7,52 +7,78 @@ using namespace std;
 
 struct Node {
     string val;
+    Node* prev;
     Node* next;
 };
 
-class LinkedList {
+class DLL {
 public:
-    LinkedList();
-    ~LinkedList();
+    DLL();
+    ~DLL();
     bool empty() const;
     Node* front() const;
-    void add(string s);
-    void remove();
+    Node* back() const;
+    void add(Node* v, string s);
+    void addFront(string s);
+    void addBack(string s);
+    void remove(Node* v);
+    void removeFront();
+    void removeBack();
 private:
     Node* head;
+    Node* tail;
 };
 
-LinkedList::LinkedList() : head(nullptr) { }
-LinkedList::~LinkedList() { while (!empty()) remove(); }
-bool LinkedList::empty() const { return head == nullptr; }
-Node* LinkedList::front() const { return empty() ? nullptr : head; }
-void LinkedList::add(string s) {
-    Node* v = new Node();
-    v->val = s;
-    v->next = head;
-    head = v;
+DLL::DLL() {
+    head = new Node();
+    tail = new Node();
+    head->next = tail;
+    tail->prev = head;
+    head->val = "*";
+    tail->val = "*";
 }
-void LinkedList::remove() {
+DLL::~DLL() { while (!empty()) removeFront(); }
+bool DLL::empty() const { return head->next == tail; }
+Node* DLL::front() const { return empty() ? nullptr : head->next; }
+Node* DLL::back() const { return empty() ?  nullptr : tail->prev; }
+void DLL::add(Node* v, string s) {
+    Node* u = new Node();
+    u->val = s;
+    
+    u->prev = v->prev;
+    u->next = v;
+    v->prev->next = u;
+    v->prev = u;
+}
+void DLL::addFront(string s) { add(head->next, s); }
+void DLL::addBack(string s) { add(tail, s); }
+void DLL::remove(Node* v) {
     if (!empty()) {
-        Node* old = head;
-        head = old->next;
-        delete old;
+        Node* u = v->prev;
+        Node* w = v->next;
+        u->next = w;
+        w->prev = u;
+        delete v;
     }
 }
+void DLL::removeFront() { if (!empty()) remove(head->next); }
+void DLL::removeBack() { if (!empty()) remove(tail->prev); }
+
 
 int main() {
-    LinkedList* ll = new LinkedList();
-//
-//
-    ll->add("you've borrowed");
-    ll->add("With the words");
-    ll->add("my sorrows\n");
-    ll->add("you fill");
-    ll->add("So why do");
+     
     
-    while (!ll->empty()) {
-        cout << ll->front()->val << " ";
-        ll->remove();
+    
+    DLL* dlist = new DLL();
+    dlist->addBack("I like pleasure ");
+    dlist->addBack("spiked with pain\n");
+    dlist->addBack("And music ");
+    dlist->addBack("is my aeroplane\n");
+    dlist->addBack("It's my aeroplane");
+    
+    while (!dlist->empty()) {
+        cout << dlist->front()->val;
+        dlist->removeFront();
     }
     std::cout << "\nFIN\n";
     return 0;
