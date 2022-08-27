@@ -64,22 +64,69 @@ void DLL::remove(Node* v) {
 void DLL::removeFront() { if (!empty()) remove(head->next); }
 void DLL::removeBack() { if (!empty()) remove(tail->prev); }
 
+class HashMap {
+    enum { DEF_CAP = 100 };
+public:
+    HashMap(int cap = DEF_CAP);
+    int hash(string s);
+    void insert(string s);
+    Node* retrieve(string s);
+    int remove(string s);
+private:
+    DLL* HM;
+    int capacity;
+};
+
+HashMap::HashMap(int cap) : HM(new DLL[cap]), capacity(cap) { }
+int HashMap::hash(string s) {
+    int hash = 5381;
+    for (int i = 0; i < (int)s.size(); ++i) {
+        hash = (((hash << 5) + hash) + s[i]) % capacity;
+    }
+    return hash;
+}
+void HashMap::insert(string s) {
+    int hashVal = hash(s);
+    HM[hashVal].addBack(s);
+}
+Node* HashMap::retrieve(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return nullptr;
+    
+    Node* node = HM[hashVal].front();
+    while (node) {
+        if (s.compare(node->val) == 0) return node;
+        node = node->next;
+    }
+    return nullptr;
+}
+int HashMap::remove(string s) {
+    int hashVal = hash(s);
+    if (HM[hashVal].empty()) return 0;
+    
+    Node* node = retrieve(s);
+    if (node) HM[hashVal].remove(node);
+    return 1;
+}
+
 
 int main() {
-     
+    HashMap* hm = new HashMap();
     
+    hm->insert("we shall");
+    hm->insert("Sit by my side,");
+    hm->insert("ne'er be younger.");
+    hm->insert("and let the world slip");
     
-    DLL* dlist = new DLL();
-    dlist->addBack("I like pleasure ");
-    dlist->addBack("spiked with pain\n");
-    dlist->addBack("And music ");
-    dlist->addBack("is my aeroplane\n");
-    dlist->addBack("It's my aeroplane");
+    cout << hm->retrieve("Sit by my side,")->val << "\n";
+    cout << hm->retrieve("and let the world slip")->val << "\n";
+    cout << hm->retrieve("we shall")->val << " ";
+    cout << hm->retrieve("ne'er be younger.")->val << "\n";
     
-    while (!dlist->empty()) {
-        cout << dlist->front()->val;
-        dlist->removeFront();
-    }
+    cout << hm->remove("Sit by my side") << "\n";
+    cout << hm->remove("Sit by my side,") << "\n";
+    cout << hm->remove("Sit by my side,") << "\n";
+    
     std::cout << "\nFIN\n";
     return 0;
 }
