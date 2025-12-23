@@ -56,7 +56,8 @@ int main() {
 		printf("%d ", list->front()->val);
 		list->remove();
 	}
-	printf("\nFIN\n");
 
+	delete list;
+	printf("\nFIN\n");
 	return 0;
 }
