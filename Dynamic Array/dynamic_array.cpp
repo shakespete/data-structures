@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  Dynamic Array
-//
-//  Created by Jose Mari Prim Syjuco on 2/27/20.
-//  Copyright © 2020 Jose Mari Prim Syjuco. All rights reserved.
-//
-
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
@@ -13,6 +5,7 @@ class Stack {
     enum { DEF_CAP = 100 };
 public:
     Stack(int e = DEF_CAP);
+    ~Stack();
     int size();
     bool empty();
     bool find(int e);
@@ -24,6 +17,7 @@ private:
     int n;
 };
 Stack::Stack(int e) : capacity(e), A(new int[e]), n(0) { }
+Stack::~Stack() { delete[] A; }
 int Stack::size() { return n; }
 bool Stack::empty() { return n == 0; }
 bool Stack::find(int e) {
@@ -37,13 +31,16 @@ void Stack::push(int e) {
     if (size() == capacity) {
         int* B = new int[capacity * 2];
         for (int i = 0; i < capacity; ++i) B[i] = A[i];
+        delete[] A;
         A = B;
         capacity *= 2;
     }
     A[n++] = e;
 }
-int Stack::pop() { return A[--n]; }
-
+int Stack::pop() {
+    if (empty()) return -1;
+    return A[--n];
+}
 
 int main() {
     Stack* st = new Stack(5);
