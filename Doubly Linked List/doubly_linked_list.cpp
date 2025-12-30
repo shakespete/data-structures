@@ -36,7 +36,13 @@ DLL::DLL() {
 	head->val = NULL;
 	tail->val = NULL;
 }
-DLL::~DLL() { while (!empty()) removeFront(); }
+DLL::~DLL() {
+	while (!empty()) {
+		removeFront();
+	}
+	delete head;
+	delete tail;
+}
 bool DLL::empty() const { return head->next == tail; }
 Node* DLL::front() const { return empty() ? NULL : head->next; }
 Node* DLL::back() const { return empty() ? NULL : tail->prev; }
@@ -74,9 +80,10 @@ int main() {
 	dlist->addBack(10);
 
 	while (!dlist->empty()) {
-		printf("%d\n", dlist->front()->val);
+		printf("%d ", dlist->front()->val);
 		dlist->removeFront();
 	}
-	printf("FIN\n");
+	delete dlist;
+	printf("\nFIN\n");
 	return 0;
 }
