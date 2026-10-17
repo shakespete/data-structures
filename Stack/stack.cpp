@@ -1,60 +1,52 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <stdexcept>
+#include <vector>
 
 typedef int E;
 
-class Node {
-public:
-	E val;
-};
-
 class Stack {
-	enum { DEF_CAP = 100 };
 public:
-	Stack(int cap = DEF_CAP);
-	~Stack();
 	int size() const;
 	bool empty() const;
-	Node* top() const;
+	const E& top() const;
 	void push(const E& e);
 	void pop();
 private:
-	Node** S;
-	int t;
-	int capacity;
+	std::vector<E> S;
 };
 
-Stack::Stack(int cap) : S(new Node*[cap]), t(-1), capacity(cap) { }
-Stack::~Stack() { while (!empty()) pop(); }
-int Stack::size() const { return t + 1; }
-bool Stack::empty() const { return size() == 0; }
-Node* Stack::top() const { return empty() ? NULL : S[t]; }
-void Stack::push(const E& e) {
-	if (size() != capacity) {
-		Node* v = new Node();
-		v->val = e;
-		++t;
-		S[t] = v;
-	}
+int Stack::size() const { return (int)S.size(); }
+bool Stack::empty() const { return S.empty(); }
+const E& Stack::top() const {
+	if (empty()) throw std::underflow_error("top of empty stack");
+	return S.back();
 }
+void Stack::push(const E& e) { S.push_back(e); }
 void Stack::pop() {
-	if (!empty()) {
-		delete S[t];
-		--t;
-	}
+	if (empty()) throw std::underflow_error("pop of empty stack");
+	S.pop_back();
 }
 
 int main() {
-	Stack* st = new Stack();
-	st->push(5);
-	st->push(4);
-	st->push(3);
-	st->push(2);
-	st->push(1);
+	Stack st;
+	st.push(5);
+	st.push(4);
+	st.push(3);
+	st.push(2);
+	st.push(1);
+	printf("size: %d\n", st.size());
 
-	while (!st->empty()) {
-		printf("%d ", st->top()->val);
-		st->pop();
+	while (!st.empty()) {
+		printf("%d ", st.top());
+		st.pop();
+	}
+	printf("\n");
+
+	try {
+		st.pop();
+	} catch (const std::underflow_error& ex) {
+		printf("caught: %s\n", ex.what());
 	}
 	return 0;
 }
